@@ -1,5 +1,9 @@
 fastapi
 sqlalchemy
 pydantic
+pydantic[email]
 uvicorn
 python-dotenv
+psycopg2
+passlib[argon2]
+python-jose

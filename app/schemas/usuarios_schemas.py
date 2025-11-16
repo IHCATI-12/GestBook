@@ -4,8 +4,8 @@ from datetime import datetime
 from enum import Enum
 
 class RoleEnum(str, Enum):
-    LEITOR = "Leitor"
-    BIBLIOTECARIO = "Bibliotecario"
+    LEITOR = "leitor"
+    BIBLIOTECARIO = "bibliotecario"
 
 class UsuarioBaseSchema(BaseModel):
     nome: str = Field(..., max_length=255)
