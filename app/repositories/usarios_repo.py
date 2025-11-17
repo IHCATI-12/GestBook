@@ -1,9 +1,9 @@
 from app.models.usuarios_models import Usuario
-from app.schemas.usuarios_schemas import UsuarioCreateSchema, UsuarioUpdateSchema, UsuarioResponseSchema
-from app.core.security import senha_hash
+from app.schemas.usuarios_schemas import UsuarioCreateSchema, UsuarioUpdateSchema
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import Optional
+from app.core.security import senha_hash
 
 ROLES_VALIDOS = {"leitor", "bibliotecario"}
 
@@ -21,6 +21,7 @@ def criar_usuario(db: Session, usuario: UsuarioCreateSchema) -> Usuario:
     return novo_usuario
 
 def atualizar_usuario(db: Session, usuario_id: int, usuario_atualizado: UsuarioUpdateSchema) -> Optional[Usuario]:
+    # mover para services futuramente
     usuario_db = db.query(Usuario).filter(Usuario.usuario_id == usuario_id).first()
     if not usuario_db:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")

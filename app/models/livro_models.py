@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, CheckConstraint
-from sqlalchemy.orm import relationship
 from app.db.base import Base
 
 class Livro(Base):
@@ -12,7 +11,7 @@ class Livro(Base):
     ano_publicacao = Column(Integer, nullable=True)
     numero_copias = Column(Integer, nullable=False, default=1)
     autor_id = Column(Integer, ForeignKey("autores.autor_id", ondelete="RESTRICT"), nullable=False)
-    autor = relationship("Autor")
+
 
     # ---- CHECK Constraints ----
     __table_args__ = (

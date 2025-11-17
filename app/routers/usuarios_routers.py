@@ -8,7 +8,6 @@ router = APIRouter(prefix="/usuarios", tags=["Usuários"])
 
 @router.post("/", response_model=UsuarioResponseSchema)
 def criar_novo_usuario(usuario: UsuarioCreateSchema, db: Session = Depends(get_db)):
-    print("Senha recebida:", usuario.senha) # log para depuração
     return criar_usuario(db, usuario)
 
 @router.put("/{usuario_id}", response_model=UsuarioResponseSchema)

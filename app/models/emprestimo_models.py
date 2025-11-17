@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, CheckConstraint, text
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, DateTime, text, CheckConstraint, ForeignKey
 from app.db.base import Base
 from enum import Enum
 
@@ -20,9 +19,6 @@ class Emprestimo(Base):
     data_devolucao_prevista = Column(DateTime, nullable=False)
     data_devolucao_real = Column(DateTime, nullable=True)
     status_emprestimo = Column(String(15), nullable=False, default=status_emprestimoEnum.EMPRESTADO.value)
-    livro = relationship("Livro") 
-    leitor = relationship("Usuario", foreign_keys=[leitor_id])
-    bibliotecario = relationship("Usuario", foreign_keys=[bibliotecario_id])
 
     # ---- CHECK Constraints ----
     __table_args__ = (
