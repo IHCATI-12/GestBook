@@ -42,12 +42,6 @@ def atualizar_usuario(db: Session, usuario_id: int, usuario_atualizado: UsuarioU
 def obter_usuario_por_id(db: Session, usuario_id: int) -> Optional[Usuario]:
     return db.query(Usuario).filter(Usuario.usuario_id == usuario_id).first()
 
-def obter_usuario_por_email(db: Session, email: str) -> Optional[Usuario]:
-    return db.query(Usuario).filter(Usuario.email == email).first()
-
-def obter_usuario_por_nome(db: Session, nome: str) -> Optional[Usuario]:
-    return db.query(Usuario).filter(Usuario.nome == nome).first()
-
 def deletar_usuario(db: Session, usuario_id: int) -> None:
     usuario_db = db.query(Usuario).filter(Usuario.usuario_id == usuario_id).first()
     if not usuario_db:

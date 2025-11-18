@@ -10,12 +10,12 @@ class StatusEmprestimoEnum(str, Enum):
 
 class EmprestimoBaseSchema(BaseModel):
     livro_id: int
-    usuario_id: int
+    leitor_id: int
     bibliotecario_id: int
     data_devolucao_prevista: datetime
 
 class EmprestimoCreateSchema(EmprestimoBaseSchema):
-    status_emprestimo: StatusEmprestimoEnum = StatusEmprestimoEnum.EMPRESTADO
+    pass
 
 class EmprestimoUpdateSchema(BaseModel):
     livro_id: Optional[int] = None
@@ -27,9 +27,16 @@ class EmprestimoUpdateSchema(BaseModel):
 
 class EmprestimoResponseSchema(EmprestimoBaseSchema):
     emprestimo_id: int
+    livro_id: int
+    leitor_id: int
+    bibliotecario_id: int
+    data_devolucao_prevista: datetime
     data_emprestimo: datetime
     data_devolucao_real: Optional[datetime] = None
     status_emprestimo: StatusEmprestimoEnum
 
     class Config:
-        from_attributes = True  
+        from_attributes = True
+        use_enum_values = True
+
+        

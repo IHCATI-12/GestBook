@@ -7,3 +7,4 @@ python-dotenv
 psycopg2
 passlib[argon2]
 python-jose
+python-multipart

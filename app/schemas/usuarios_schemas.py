@@ -9,7 +9,7 @@ class RoleEnum(str, Enum):
 
 class UsuarioBaseSchema(BaseModel):
     nome: str = Field(..., max_length=255)
-    email: EmailStr = Field(...)
+    email: EmailStr = Field(..., max_length=100)
     role: RoleEnum = RoleEnum.LEITOR
 
 class UsuarioCreateSchema(UsuarioBaseSchema):

@@ -13,6 +13,6 @@ def cria_token_acesso(dados: dict, senha_secreta: str,tempo_expiracao: Optional[
     dados_para_codificar.update({"exp": expiração})
     
     token_jwt = jwt.encode(dados_para_codificar, senha_secreta, algorithm=algoritmo_token)
-    
+
     return token_jwt
 

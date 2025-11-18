@@ -24,6 +24,9 @@ def cadastrar_livro(db: Session, livro: LivroCreateSchema) -> Livro:
     db.refresh(novo_livro)
     return novo_livro
 
+def listar_livros(db: Session, skip: int = 0, limit: int = 100) -> list[Livro]:
+    return db.query(Livro).offset(skip).limit(limit).all()
+
 def atualizar_livro(db: Session, livro_id: int, livro_atualizado: LivroUpdateSchema) -> Optional[Livro]:
     # mover para services futuramente
     livro_db = db.query(Livro).filter(Livro.livro_id == livro_id).first()
@@ -47,15 +50,6 @@ def atualizar_livro(db: Session, livro_id: int, livro_atualizado: LivroUpdateSch
     db.refresh(livro_db)
     return livro_db
 
-def obter_livro_por_id(db: Session, livro_id: int) -> Optional[Livro]:
-    return db.query(Livro).filter(Livro.livro_id == livro_id).first()
-
-def obter_livro_por_autor(db: Session, autor_id: int) -> list[Livro]:
-    return db.query(Livro).filter(Livro.autor_id == autor_id).all()
-
-def obter_livro_por_titulo(db: Session, titulo: str) -> Optional[Livro]:
-    return db.query(Livro).filter(Livro.titulo == titulo).first()
-
 def deletar_livro(db: Session, livro_id: int) -> None:
     livro_db = db.query(Livro).filter(Livro.livro_id == livro_id).first()
     if not livro_db:
@@ -63,9 +57,3 @@ def deletar_livro(db: Session, livro_id: int) -> None:
     
     db.delete(livro_db)
     db.commit()
-
-def listar_livros(db: Session, skip: int = 0, limit: int = 100) -> list[Livro]:
-    return db.query(Livro).offset(skip).limit(limit).all()
-
-
-

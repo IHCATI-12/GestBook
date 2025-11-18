@@ -16,6 +16,9 @@ def cadastrar_autor(db: Session, autor: AutorCreateSchema) -> Autor:
     db.refresh(novo_autor)
     return novo_autor
 
+def listar_autores(db: Session, skip: int = 0, limit: int = 100) -> list[Autor]:
+    return db.query(Autor).offset(skip).limit(limit).all()
+
 def atualizar_autor(db: Session, autor_id: int, autor_atualizado: AutorUpdateSchema) -> Optional[Autor]:
     autor_db = db.query(Autor).filter(Autor.autor_id == autor_id).first()
     if not autor_db:
@@ -32,12 +35,6 @@ def atualizar_autor(db: Session, autor_id: int, autor_atualizado: AutorUpdateSch
     db.refresh(autor_db)
     return autor_db
 
-def obter_autor_por_id(db: Session, autor_id: int) -> Optional[Autor]:
-    return db.query(Autor).filter(Autor.autor_id == autor_id).first()
-
-def obter_autor_por_nome(db: Session, nome: str) -> Optional[Autor]:
-    return db.query(Autor).filter(Autor.nome == nome).first()
-
 def deletar_autor(db: Session, autor_id: int) -> None:
     # mover para services futuramente
     autor_db = db.query(Autor).filter(Autor.autor_id == autor_id).first()
@@ -48,9 +45,5 @@ def deletar_autor(db: Session, autor_id: int) -> None:
         raise HTTPException(status_code=400, detail=f"Não é possível deletar o autor {autor_db.nome} pois existem livros associados a ele")
     db.delete(autor_db)
     db.commit()
-
-def listar_autores(db: Session, skip: int = 0, limit: int = 100) -> list[Autor]:
-    return db.query(Autor).offset(skip).limit(limit).all()
-
 
 

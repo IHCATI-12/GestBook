@@ -3,12 +3,23 @@ from app.routers.usuarios_routers import router as usuario_router
 from app.routers.autenticacao_routers import router as auth_router
 from app.routers.livro_routers import router as livro_router
 from app.routers.autores_routers import router as autor_router
+from app.routers.emprestimo_routers import router as emprestimo_router
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
 @app.get("/")
 def root():
     return {"Aplicação": "Online"}
+
+# Configuração do CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite todas as origens, ajuste conforme necessário
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # rotas de usuários
 app.include_router(usuario_router)
@@ -22,4 +33,5 @@ app.include_router(livro_router)
 # rotas de autores
 app.include_router(autor_router)
 
-
+# rotas de empréstimos
+app.include_router(emprestimo_router)

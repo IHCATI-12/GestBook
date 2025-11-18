@@ -24,5 +24,4 @@ class Emprestimo(Base):
     __table_args__ = (
         CheckConstraint("status_emprestimo IN ('Emprestado', 'Devolvido', 'Atrasado')", name="check_status_emprestimo"),
         CheckConstraint( "data_devolucao_prevista > data_emprestimo", name="chk_devolucao_datas"))
-
     
