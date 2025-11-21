@@ -1,16 +1,12 @@
 from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 from datetime import datetime
-from enum import Enum
-
-class RoleEnum(str, Enum):
-    LEITOR = "leitor"
-    BIBLIOTECARIO = "bibliotecario"
+from app.models.usuarios_models import roleEnum
 
 class UsuarioBaseSchema(BaseModel):
-    nome: str = Field(..., max_length=255)
+    nome: str = Field(..., min_length=1, max_length=255)
     email: EmailStr = Field(..., max_length=100)
-    role: RoleEnum = RoleEnum.LEITOR
+    role: roleEnum = roleEnum.LEITOR
 
 class UsuarioCreateSchema(UsuarioBaseSchema):
     senha: str = Field(..., min_length=6, max_length=255)
@@ -18,7 +14,7 @@ class UsuarioCreateSchema(UsuarioBaseSchema):
 class UsuarioUpdateSchema(BaseModel):
     nome: Optional[str] = Field(None, max_length=255)
     email: Optional[EmailStr] = None
-    role: Optional[RoleEnum] = None
+    role: Optional[roleEnum] = None
     senha: Optional[str] = Field(None, min_length=6, max_length=255)
 
 class UsuarioResponseSchema(UsuarioBaseSchema):

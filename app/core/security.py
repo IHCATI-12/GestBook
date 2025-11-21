@@ -16,7 +16,14 @@ def senha_hash(password: str) -> str:
     return contexto_senha.hash(password)
 
 def verifica_senha(senha: str, senha_criptografada: str) -> bool:
-    return contexto_senha.verify(senha, senha_criptografada)    
+    return contexto_senha.verify(senha, senha_criptografada)   
+ 
+def verifica_role(roles_permitidas: list[str]):
+    def role_checker(usuario: Usuario = Depends(obter_usuario_atual)) -> Usuario:
+        if usuario.role not in roles_permitidas:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Acesso negado")
+        return usuario
+    return role_checker
 
 def obter_usuario_atual(db: Session = Depends(get_db), credentials: HTTPAuthorizationCredentials = Depends(seguranca)) -> Usuario:
     token = credentials.credentials
@@ -34,10 +41,5 @@ def obter_usuario_atual(db: Session = Depends(get_db), credentials: HTTPAuthoriz
     
     return usuario
 
-def verifica_role(roles_permitidas: list[str]):
-    def role_checker(usuario: Usuario = Depends(obter_usuario_atual)) -> Usuario:
-        if usuario.role not in roles_permitidas:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Acesso negado")
-        return usuario
-    return role_checker
+
 

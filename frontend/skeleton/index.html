@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dracula's Login - Castlevania Theme</title>
+    <link rel="stylesheet" href="../styles/index.css">
+</head>
+<body>
+    <div class="container" id="container">
+        <div class="form-container sign-up-container">
+            <form action="#">
+                <h1>Criar Contrato</h1>
+                <span>Registrar-se</span>
+                
+                <div class="user-type-selector">
+                    <input type="radio" id="bibliotecario" name="user_type" value="bibliotecario" checked>
+                    <label for="bibliotecario">Bibliotecário</label>
+                    
+                    <input type="radio" id="leitor" name="user_type" value="leitor">
+                    <label for="leitor">Leitor</label>
+                </div>
+                <input id="reg_nome" type="text" placeholder="Nome" required/>
+                <input id="reg_email" type="email" placeholder="E-mail" required/>
+                <input id="reg_senha" type="password" placeholder="Senha" required/>
+                <div id="reg_msg" class="form-msg"></div>
+                <button id="btn_registrar">Registrar</button>
+            </form>
+        </div>
+
+        <div class="form-container sign-in-container">
+            <form action="#">
+                <h1>Acessar a Biblioteca</h1>
+                <span>Use seu e-mail e senha</span>
+                <input id="log_email" type="email" placeholder="E-mail" required/>
+                <input id="log_senha" type="password" placeholder="Senha" required/>
+                <a href="#">Esqueceu a Senha?</a>
+                <div id="log_msg" class="form-msg"></div>
+                <button id="btn_login">Entrar</button>
+            </form>
+        </div>
+
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left">
+                    <h1>Bem-vindo de Volta!</h1>
+                    <p>Entre para se juntar a nossa extensa coleção!</p>
+                    <button class="ghost" id="signIn">Entrar</button>
+                </div>
+                <div class="overlay-panel overlay-right">
+                    <img src="../imgens/Logo.png" alt="Logo Animada do Drácula" class="overlay-logo">
+                    <h1>GestBook</h1>
+                    <p>Crie sua conta para ter acesso a coleção!</p>
+                    <button class="ghost" id="signUp">Registrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../machine/index.js"></script>
+</body>
+</html>

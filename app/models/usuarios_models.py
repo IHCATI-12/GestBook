@@ -4,13 +4,13 @@ from enum import Enum
 
 # Definição do modelo para a coluna 'role' com valores possíveis
 class roleEnum(str, Enum):
-    LEITOR = "Leitor"
-    BIBLIOTECARIO = "Bibliotecario"
+    LEITOR = "leitor"
+    BIBLIOTECARIO = "bibliotecario"
 
 class Usuario(Base):
     __tablename__ = "usuarios"
 
-    usuario_id = Column(Integer, primary_key=True, index=True)
+    usuario_id = Column(Integer, primary_key=True, index=True, nullable=False)
     nome = Column(String(255), index=True, nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
     senha_hash = Column(String(255), nullable=False)
