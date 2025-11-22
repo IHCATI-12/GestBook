@@ -20,7 +20,7 @@ const API_URL = "http://127.0.0.1:8000/auth";
 
 
 // -------------------------------
-// FUNÇÕES DE APOIO (Atualizadas para formatar array de erros)
+// FUNÇÕES DE APOIO (Mantidas)
 // -------------------------------
 
 // Tratamento seguro de JSON para evitar erros de parsing
@@ -91,7 +91,7 @@ function showFormMessage(elementId, message, type = "error") {
 
 
 // -------------------------------
-// REGISTRO DE USUÁRIO (Atualizado para usar formatErrorMessage)
+// REGISTRO DE USUÁRIO (Mantido)
 // -------------------------------
 document.getElementById("btn_registrar").addEventListener("click", async (e) => {
     e.preventDefault();
@@ -135,7 +135,7 @@ document.getElementById("btn_registrar").addEventListener("click", async (e) => 
 
 
 // -------------------------------
-// LOGIN DE USUÁRIO (Atualizado para redirecionamento condicional)
+// LOGIN DE USUÁRIO (Corrigido o LocalStorage e Redirecionamento)
 // -------------------------------
 document.getElementById("btn_login").addEventListener("click", async (e) => {
     e.preventDefault();
@@ -164,21 +164,26 @@ document.getElementById("btn_login").addEventListener("click", async (e) => {
 
         // --- Lógica de Sucesso ---
 
-        // Salva informações no navegador
+        // 🚨 CORREÇÃO PRINCIPAL: Salva o nome do usuário na chave 'user_name' para consistência.
+        // Assumindo que 'data.nome' retorna o nome completo ("Ulisses Soares Filho").
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.role);
-        localStorage.setItem("nome", data.nome);
+        localStorage.setItem("user_name", data.nome); // <--- MUDANÇA AQUI!
 
+        showToast(`Bem-vindo, ${data.nome.split(' ')[0]}!`); // Mostra o primeiro nome no toast
 
         // Redirecionamento condicional
         const role = data.role.toLowerCase();
-        let redirectPage = "../pages/dashboard.html"; // Padrão
+        
+        // 🚨 PADRÃO: Defina o padrão para o leitor (já que a maioria será leitor)
+        let redirectPage = "../skeleton/dashboard_leitor.html";
         
         if (role === 'bibliotecario') {
             redirectPage = "../pages/bibliotecario/dashboard.html";
-        } else if (role === 'leitor') {
-            redirectPage = "../pages/leitor/dashboard.html";
-        }
+        } 
+        
+        // Se a role for 'leitor', o valor padrão já é o correto, não precisa de 'else if'.
+        // Se for outra coisa, vai para o leitor.
 
         // Redireciona
         setTimeout(() => {

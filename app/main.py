@@ -4,6 +4,7 @@ from app.routers.autenticacao_routers import router as auth_router
 from app.routers.livro_routers import router as livro_router
 from app.routers.autores_routers import router as autor_router
 from app.routers.emprestimo_routers import router as emprestimo_router
+from app.routers.generos_routers import router as generos_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -35,3 +36,6 @@ app.include_router(autor_router)
 
 # rotas de empréstimos
 app.include_router(emprestimo_router)
+
+# Adiciona o roteador de gêneros
+app.include_router(generos_router)  

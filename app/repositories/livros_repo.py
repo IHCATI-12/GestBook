@@ -1,23 +1,25 @@
 from app.models.livro_models import Livro
+from app.models.autores_models import Autor
 from app.schemas.livro_schemas import LivroCreateSchema, LivroUpdateSchema
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import Optional
 
 
+
 def cadastrar_livro(db: Session, livro: LivroCreateSchema) -> Livro:
     # mover para services futuramente
-    autor_cadastrado = db.query(Livro).filter(Livro.autor_id == livro.autor_id).first()
+    autor_cadastrado = db.query(Autor).filter(Autor.autor_id == livro.autor_id).first()
     if not autor_cadastrado:
         raise HTTPException(status_code=400, detail="Autor não cadastrado")
-
+    
     novo_livro = Livro(
         titulo=livro.titulo,
         isbn=livro.isbn,
         editora=livro.editora,
         ano_publicacao=livro.ano_publicacao,
         numero_copias=livro.numero_copias,
-        autor_id=livro.autor_id
+        autor_id=livro.autor_id,
     )
     db.add(novo_livro)
     db.commit()

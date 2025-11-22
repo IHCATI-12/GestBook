@@ -1,0 +1,326 @@
+/* Paleta de Cores:
+    --dark-bg: #1C1C1E; (Fundo Escuro)
+    --form-bg: #343438; (Containers, Sidebar)
+    --gold: #D4AF37; (Destaque, Botões Primários)
+    --red: #9E2A2B; (Alerta/Ação)
+    --light-text: #F3F3F3; (Texto Principal)
+*/
+
+/* Reset e Fontes */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #1C1C1E;
+    font-family: 'Montserrat', sans-serif;
+    color: #F3F3F3;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* --- LAYOUT PRINCIPAL --- */
+
+.dashboard-wrapper {
+    display: grid;
+    grid-template-rows: auto 1fr; /* Header e Main Layout */
+    height: 100vh;
+}
+
+.main-layout {
+    display: grid;
+    grid-template-columns: 250px 1fr; /* Sidebar e Conteúdo */
+    overflow: hidden; /* Garante que o scroll só ocorra no content-area */
+}
+
+/* --- 1. HEADER SUPERIOR --- */
+
+.top-header {
+    background-color: #343438;
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    color: #F3F3F3;
+    font-size: 20px;
+    cursor: pointer;
+    margin-right: 20px;
+}
+
+.search-bar {
+    display: flex;
+    flex-grow: 1;
+    max-width: 600px;
+    background-color: #1C1C1E;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.search-bar input {
+    border: none;
+    background: none;
+    padding: 10px 15px;
+    color: #F3F3F3;
+    width: 100%;
+    outline: none;
+}
+
+.search-bar button {
+    background-color: #D4AF37;
+    border: none;
+    color: #1C1C1E;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+}
+
+.user-profile span {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.user-avatar {
+    width: 35px;
+    height: 35px;
+    background-color: #D4AF37;
+    color: #1C1C1E;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* --- 2. SIDEBAR (Gêneros) --- */
+
+.sidebar {
+    background-color: #1C1C1E;
+    padding: 20px 0;
+    border-right: 1px solid #343438;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar h2 {
+    color: #D4AF37;
+    font-size: 18px;
+    padding: 0 20px 10px;
+    border-bottom: 2px solid #343438;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.genre-list {
+    list-style: none;
+}
+
+.genre-list li a {
+    display: block;
+    padding: 10px 20px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.genre-list li a:hover {
+    background-color: #343438;
+    color: #D4AF37;
+}
+
+/* --- 3. CONTEÚDO PRINCIPAL --- */
+
+.content-area {
+    padding: 30px;
+    overflow-y: auto; /* Permite scroll no conteúdo */
+    background-color: #343438;
+}
+
+.content-area h2 {
+    color: #F3F3F3;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #1C1C1E;
+    padding-bottom: 10px;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: #1C1C1E;
+    margin: 40px 0;
+}
+
+/* --- CATÁLOGO DE LIVROS (Grid) --- */
+
+.livro-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 25px;
+}
+
+.livro-card {
+    background-color: #1C1C1E;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s;
+}
+
+.livro-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+.capa-placeholder {
+    width: 100%;
+    height: 150px;
+    background-color: #343438;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 2px solid #D4AF37;
+}
+
+.card-info {
+    width: 100%;
+}
+
+.card-titulo {
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #F3F3F3;
+}
+
+.card-detalhe {
+    font-size: 11px;
+    color: #D4AF37;
+    margin-bottom: 15px;
+}
+
+.btn-detalhes {
+    background-color: #D4AF37;
+    color: #1C1C1E;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.btn-detalhes:hover {
+    background-color: #ffc957;
+}
+
+/* --- SEÇÃO DE EMPRÉSTIMOS (Tabela e Filtros) --- */
+
+.emprestimos-container {
+    background-color: #1C1C1E;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+.filtro-datas {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 10px 0;
+    border-bottom: 1px solid #343438;
+}
+
+.filtro-datas label {
+    font-size: 14px;
+    color: #F3F3F3;
+}
+
+.filtro-datas input[type="date"] {
+    background-color: #343438;
+    border: 1px solid #1C1C1E;
+    color: #F3F3F3;
+    padding: 8px 10px;
+    border-radius: 5px;
+    appearance: none; /* Remove estilo nativo do campo de data */
+}
+
+.btn-filtro {
+    background-color: #343438;
+    color: #D4AF37;
+    border: 1px solid #D4AF37;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.btn-filtro:hover {
+    background-color: #48484d;
+}
+
+.tabela-emprestimos {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.tabela-emprestimos th, .tabela-emprestimos td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #343438;
+}
+
+.tabela-emprestimos thead th {
+    background-color: #343438;
+    color: #D4AF37;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.tabela-emprestimos tbody tr:hover {
+    background-color: #2a2a2c;
+}
+
+.data-devolucao {
+    color: #F3F3F3;
+    font-weight: bold;
+}
+
+.data-devolucao.expirando {
+    color: #9E2A2B; /* Vermelho de Alerta */
+    font-weight: bold;
+}
+
+.btn-devolver {
+    background-color: #9E2A2B; /* Botão de Ação Vermelho */
+    color: #F3F3F3;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-devolver:hover {
+    background-color: #c0392b;
+}

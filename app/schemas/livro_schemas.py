@@ -8,6 +8,7 @@ class LivroBaseSchema(BaseModel):
     ano_publicacao: Optional[int] = None
     numero_copias: int = Field(..., ge=0)
     autor_id: int
+    genero: Optional[str] = None
 
 class LivroCreateSchema(LivroBaseSchema):
     pass
@@ -25,4 +26,5 @@ class LivroResponseSchema(LivroBaseSchema):
 
     class Config:
         from_attributes = True
+
 
