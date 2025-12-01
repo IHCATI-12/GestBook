@@ -4,16 +4,19 @@ from sqlalchemy.orm import Session
 
 
 # criar relação entre livro e gênero
-def create_livro_genero(db: Session, livro_genero: LivrosGenerosSchemas):
-    db_livro_genero = LivrosGenerosModels(
-        livro_id=livro_genero.livro_id,
-        genero_id=livro_genero.genero_id
-    )
-    db.add(db_livro_genero)
+def create_livro_genero(db: Session, livro_generos: LivrosGenerosSchemas):
+    novos_resgistros = []
+    for genero_id in livro_generos.generos_ids:
+        novo_registro = LivrosGenerosModels(
+            livro_id=livro_generos.livro_id,
+            genero_id=genero_id
+        )
+        novos_resgistros.append(novo_registro)
+    db.add_all(novos_resgistros)
     db.commit()
-    db.refresh(db_livro_genero)
-    return db_livro_genero
-
+    for registro in novos_resgistros:
+        db.refresh(registro)
+    return novos_resgistros
 
 # obter todas as relações entre livros e gêneros
 def get_livros_generos(db: Session, skip: int = 0, limit: int = 100):

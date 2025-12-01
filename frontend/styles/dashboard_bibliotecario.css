@@ -1,0 +1,685 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+/* Variáveis de Cores */
+:root {
+    --dark-bg: #1C1C1E;
+    --medium-bg: #343438;
+    --light-bg: #2A2A2D; /* Fundo dos Cards/Header */
+    --gold: #D4AF37; /* Destaque Primário */
+    --light-text: #F3F3F3;
+    --secondary-text: #B0B0B0;
+    --admin-blue: #3498DB; /* Cor secundária/Administrativa */
+    --error-red: #E74C3C;
+    --success-green: #2ECC71;
+}
+
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--dark-bg);
+    color: var(--light-text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    display: flex;
+    width: 100%;
+    max-width: 1400px;
+    margin: 20px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+    width: 250px;
+    background-color: var(--medium-bg);
+    padding: 25px 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-header {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.logo {
+    font-size: 22px; 
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.5px;
+}
+
+.main-menu {
+    list-style: none;
+    width: 100%;
+    padding: 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 25px;
+    color: var(--light-text);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    font-weight: 500;
+    gap: 15px;
+}
+
+.menu-item:hover {
+    background-color: var(--dark-bg);
+    color: var(--gold);
+}
+
+.menu-item.active {
+    background-color: var(--dark-bg);
+    color: var(--admin-blue); 
+    border-left: 4px solid var(--admin-blue);
+    padding-left: 21px;
+    font-weight: 600;
+}
+
+.menu-item i {
+    font-size: 18px;
+    color: var(--secondary-text);
+    transition: color 0.2s;
+}
+
+.menu-item.active i {
+    color: var(--admin-blue);
+}
+
+/* --- MAIN CONTENT --- */
+.main-content {
+    flex-grow: 1;
+    background-color: var(--dark-bg);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Top Header */
+.top-header {
+    background-color: var(--light-bg);
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.header-title span {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gold);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-name {
+    font-weight: 600;
+    color: var(--gold);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--admin-blue); 
+    color: var(--light-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+/* --- SECTIONS and FORMS --- */
+.content-section {
+    padding: 30px;
+    display: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+
+.content-section.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-header h2 {
+    color: var(--light-text);
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.section-header h2 i {
+    color: var(--admin-blue);
+    font-size: 26px;
+}
+
+/* Forms */
+.form-container {
+    background-color: var(--light-bg);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-bottom: 30px;
+}
+
+#create-book-form, #create-loan-form, #create-author-form, #create-genre-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+#delete-book-form, #delete-author-form, #delete-genre-form {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Coluna para Select e Coluna para Botão */
+    gap: 20px;
+    align-items: end;
+}
+/* Força o botão a ir para a segunda coluna se houver duas */
+#delete-book-form button, #delete-author-form button, #delete-genre-form button {
+    grid-column: 2 / 3;
+}
+/* Força o select a ir para a primeira coluna */
+#delete-book-form .form-group, #delete-author-form .form-group, #delete-genre-form .form-group {
+    grid-column: 1 / 2;
+}
+
+
+/* Tratamento especial para o formulário de Gênero, que é mais simples */
+#create-genre-form {
+    grid-template-columns: 3fr 1fr;
+    align-items: end;
+}
+#create-genre-form button {
+    grid-column: 2 / 3;
+}
+
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--secondary-text);
+    font-size: 14px;
+}
+
+.form-group input, .form-group select {
+    padding: 10px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background-color: var(--dark-bg);
+    color: var(--light-text);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.form-group input:focus, .form-group select:focus {
+    border-color: var(--admin-blue);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3); 
+}
+
+.form-grid {
+    display: contents; 
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1; 
+}
+
+.form-group small {
+    margin-top: 5px;
+    color: var(--secondary-text);
+    font-size: 12px;
+}
+
+/* Botão Primário (Ação de Cadastro/Empréstimo) */
+.btn-primary {
+    grid-column: 1 / -1;
+    border-radius: 8px;
+    border: none;
+    background-color: var(--admin-blue);
+    color: var(--light-text);
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+}
+
+/* Botão Secundário (Filtros) */
+.btn-secondary {
+    border-radius: 8px;
+    border: 1px solid var(--secondary-text);
+    background-color: transparent;
+    color: var(--secondary-text);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--light-text);
+    border-color: var(--light-text);
+}
+
+/* Botão de Perigo (Excluir/Finalizar) */
+.btn-danger {
+    border-radius: 8px;
+    border: none;
+    background-color: var(--error-red);
+    color: var(--light-text);
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+
+
+/* Summary Grid (Home) */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.summary-card {
+    background-color: var(--light-bg);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.summary-card h3 {
+    font-size: 16px;
+    color: var(--secondary-text);
+    margin-bottom: 10px;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.summary-card p {
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.summary-card.gold p { color: var(--gold); }
+.summary-card.red p { color: var(--error-red); }
+.summary-card.blue p { color: var(--admin-blue); }
+
+
+/* Loans List and Filters */
+.loans-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 25px;
+}
+
+.loan-card {
+    background-color: var(--light-bg);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border-left: 5px solid var(--admin-blue);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.loan-card h3 {
+    color: var(--gold); 
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.loan-card p {
+    font-size: 14px;
+    color: var(--secondary-text);
+}
+
+.loan-card strong {
+    color: var(--light-text);
+}
+
+.loan-card .due-date {
+    font-weight: 600;
+    color: var(--success-green); /* Cor padrão para não atrasado */
+}
+
+.loan-card .due-date.overdue {
+    color: var(--error-red);
+}
+
+.loan-card .overdue-message {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--error-red) !important;
+}
+
+.loan-card .btn-finish-loan {
+    /* Reutiliza estilo de botão de perigo para a ação de finalizar, mas com cor de sucesso */
+    background-color: var(--success-green);
+    color: var(--dark-bg);
+    font-size: 14px;
+    padding: 8px 15px;
+    margin-top: 15px;
+}
+
+.loan-card .btn-finish-loan:hover {
+    background-color: #27ae60;
+}
+
+
+/* Filtros de Empréstimo */
+.loan-list-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.loan-list-header h2 {
+    margin-bottom: 10px;
+}
+
+.filters {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    background-color: var(--light-bg);
+    padding: 15px;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 180px;
+}
+
+.filters .btn-secondary {
+    margin-top: 0;
+    padding: 10px 15px;
+}
+
+/* Book Grid (Catálogo) */
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.book-card {
+    background-color: var(--light-bg);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-left: 4px solid var(--gold);
+}
+
+.book-card h3 {
+    color: var(--admin-blue); 
+    margin-bottom: 5px;
+    font-size: 18px;
+}
+
+.book-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.book-year {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gold);
+}
+
+.book-card-body p {
+    font-size: 14px;
+    color: var(--secondary-text);
+    margin: 5px 0;
+}
+
+/* Mensagens */
+.loading-message, .empty-message, .error-message, .success-message {
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+    grid-column: 1 / -1;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+.error-message {
+    color: var(--error-red);
+    background: rgba(231, 76, 60, 0.1);
+}
+
+.success-message {
+    color: var(--success-green);
+    background: rgba(46, 204, 113, 0.1);
+}
+
+/* Responsividade básica */
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: 15px 0;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar-nav {
+        display: none; /* Esconde a nav em telas pequenas, pode ser expandido com JS */
+    }
+
+    .loan-list-header {
+        flex-direction: column;
+    }
+    .filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none; /* Inicia oculto */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-content {
+    background-color: var(--light-bg);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    transform: translateY(-50px); /* Inicia acima para a animação */
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    border-top: 5px solid var(--error-red);
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header i {
+    font-size: 40px;
+    color: var(--error-red);
+    margin-bottom: 10px;
+}
+
+.modal-content h3 {
+    font-size: 20px;
+    color: var(--light-text);
+    margin: 0;
+}
+
+.modal-content p {
+    color: var(--secondary-text);
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.modal-actions button {
+    flex: 1;
+    font-size: 15px;
+    padding: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+#btn-confirm {
+    background-color: var(--error-red);
+    color: var(--light-text);
+    border: none;
+}
+
+#btn-confirm:hover {
+    background-color: #c0392b;
+}
+
+#btn-cancel {
+    background-color: var(--medium-bg);
+    color: var(--secondary-text);
+    border: 1px solid var(--secondary-text);
+}
+
+#btn-cancel:hover {
+    background-color: #3e3e42;
+    color: var(--light-text);
+}
+
+.loan-card.returned {
+    border-left: 5px solid var(--secondary-text); 
+    opacity: 0.8; 
+}
+
+.loan-status-returned {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--secondary-text);
+    background: rgba(176, 176, 176, 0.1); 
+    padding: 3px 8px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-top: 5px;
+}

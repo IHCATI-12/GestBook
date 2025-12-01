@@ -7,18 +7,6 @@ from app.core.security import senha_hash
 
 ROLES_VALIDOS = {"leitor", "bibliotecario"}
 
-def criar_usuario(db: Session, usuario: UsuarioCreateSchema) -> Usuario:
-    role = usuario.role.value if usuario.role in ROLES_VALIDOS else "leitor"
-    novo_usuario = Usuario(
-        nome=usuario.nome,
-        email=usuario.email,
-        senha_hash=senha_hash(usuario.senha.strip()),
-        role=role
-    )
-    db.add(novo_usuario)
-    db.commit()
-    db.refresh(novo_usuario)
-    return novo_usuario
 
 def atualizar_usuario(db: Session, usuario_id: int, usuario_atualizado: UsuarioUpdateSchema) -> Optional[Usuario]:
     # mover para services futuramente
@@ -42,11 +30,16 @@ def atualizar_usuario(db: Session, usuario_id: int, usuario_atualizado: UsuarioU
 def obter_usuario_por_id(db: Session, usuario_id: int) -> Optional[Usuario]:
     return db.query(Usuario).filter(Usuario.usuario_id == usuario_id).first()
 
+def listar_usuarios_bibliotecarios(db: Session) -> list[Usuario]:
+    return db.query(Usuario).filter(Usuario.role == "bibliotecario").all()
+
+def listar_usuario_leitores(db: Session) -> list[Usuario]:
+    return db.query(Usuario).filter(Usuario.role == "leitor").all()
+
 def deletar_usuario(db: Session, usuario_id: int) -> None:
     usuario_db = db.query(Usuario).filter(Usuario.usuario_id == usuario_id).first()
     if not usuario_db:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    
     db.delete(usuario_db)
     db.commit()
 

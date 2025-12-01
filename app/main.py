@@ -13,6 +13,7 @@ app = FastAPI()
 def root():
     return {"Aplicação": "Online"}
 
+
 # Configuração do CORS
 app.add_middleware(
     CORSMiddleware,

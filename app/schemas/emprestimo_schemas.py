@@ -25,6 +25,10 @@ class EmprestimoUpdateSchema(BaseModel):
     data_devolucao_real: Optional[datetime] = None
     status_emprestimo: Optional[StatusEmprestimoEnum] = None
 
+class DevolucaoSchema(BaseModel):
+    bibliotecario_devolucao_id: int
+    data_devolucao_real: datetime
+
 class EmprestimoResponseSchema(EmprestimoBaseSchema):
     emprestimo_id: int
     livro_id: int

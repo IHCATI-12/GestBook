@@ -1,4 +1,5 @@
 from app.models.generos_models import Genero
+from app.models.livro_models import Livro
 from app.schemas.generos_schemas import GeneroCreate, GeneroResponse
 from sqlalchemy.orm import Session
 from fastapi import HTTPException   
@@ -20,6 +21,12 @@ def listar_generos(db: Session) -> list[Genero]:
 
 def obter_genero_por_id(db: Session, genero_id: int) -> Genero:
     return db.query(Genero).filter(Genero.genero_id == genero_id).first()
+
+def buscar_livros_por_genero(db: Session, genero_id: int) -> list[Livro]:
+    genero_id = db.query(Genero).filter(Genero.genero_id == genero_id).first()
+    if not genero_id:
+        raise HTTPException(status_code=404, detail="Gênero não encontrado")    
+    return genero_id.livros
 
 def deletar_genero(db: Session, genero_id: int) -> None:
     genero_db = db.query(Genero).filter(Genero.genero_id == genero_id).first()

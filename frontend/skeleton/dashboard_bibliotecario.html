@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard do Bibliotecário | GestBook Admin</title>
+    <link rel="stylesheet" href="../styles/dashboard_bibliotecario.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo">GestBook Admin</span>
+            </div>
+            <nav class="sidebar-nav">
+                <ul class="main-menu">
+                    <li class="menu-item active" data-section="dashboard-home">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </li>
+                    <li class="menu-item" data-section="emprestimos-section">
+                        <i class="fas fa-handshake"></i> Empréstimos
+                    </li>
+                    <li class="menu-item" data-section="gerenciar-livros-section">
+                        <i class="fas fa-book"></i> Gerenciar Livros
+                    </li>
+                    <li class="menu-item" data-section="gerenciar-autores-section">
+                        <i class="fas fa-user-edit"></i> Gerenciar Autores
+                    </li>
+                    <li class="menu-item" data-section="gerenciar-generos-section">
+                        <i class="fas fa-tags"></i> Gerenciar Gêneros
+                    </li>
+                    <li class="menu-item" data-section="catalogo-section">
+                        <i class="fas fa-search"></i> Catálogo
+                    </li>
+                    <li class="menu-item" id="logout-button">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-title">
+                    <span id="current-section-title">Dashboard</span>
+                </div>
+                <div class="user-info">
+                    <span id="user-name" class="user-name">Carregando...</span>
+                    <div class="user-avatar" id="user-avatar-initial">B</div>
+                </div>
+            </header>
+
+            <section id="dashboard-home" class="content-section active">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-line"></i> Resumo Administrativo</h2>
+                </div>
+                <div class="summary-grid">
+                    <div class="summary-card gold">
+                        <h3>Livros Disponíveis</h3>
+                        <p id="total-books">...</p>
+                    </div>
+                    <div class="summary-card red">
+                        <h3>Empréstimos Atrasados</h3>
+                        <p id="overdue-loans">...</p>
+                    </div>
+                    <div class="summary-card blue">
+                        <h3>Leitores Ativos</h3>
+                        <p id="active-readers">...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="emprestimos-section" class="content-section">
+                
+                <div class="section-header">
+                    <h2><i class="fas fa-plus-circle"></i> Criar Novo Empréstimo</h2>
+                </div>
+                <div class="form-container" id="loan-create-form-container">
+                    <form id="create-loan-form">
+                        <div class="form-group">
+                            <label for="loan-book-id">Livro Disponível:</label>
+                            <select id="loan-book-id" required>
+                                <option value="" disabled selected>Carregando livros...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="loan-leitor-id">Leitor:</label>
+                            <select id="loan-leitor-id" required>
+                                <option value="" disabled selected>Carregando leitores...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="loan-data-devolucao">Data de Devolução Prevista:</label>
+                            <input type="date" id="loan-data-devolucao" required>
+                        </div>
+                        <button type="submit" class="btn-primary"><i class="fas fa-plus-circle"></i> Registrar Empréstimo</button>
+                    </form>
+                </div>
+
+                <div class="section-header loan-list-header">
+                    <h2><i class="fas fa-list"></i> Empréstimos Ativos</h2>
+                    <div class="filters">
+                        <div class="form-group filter-group">
+                            <label for="filter-status">Filtrar por Status:</label>
+                            <select id="filter-status">
+                                <option value="">Todos os Status</option>
+                                <option value="Emprestado">Emprestado</option>
+                                <option value="Devolvido">Devolvido</option>
+                                <option value="Atrasado">Atrasado</option> 
+                            </select>
+                        </div>
+                        <div class="form-group filter-group">
+                            <label for="filter-leitor-id">Filtrar por Leitor:</label>
+                            <select id="filter-leitor-id">
+                                <option value="">Todos os Leitores</option>
+                                </select>
+                        </div>
+                        <div class="form-group filter-group">
+                            <label for="filter-data-devolucao">Devolução Antes de:</label>
+                            <input type="date" id="filter-data-devolucao">
+                        </div>
+                        <button class="btn-secondary" id="apply-loan-filters"><i class="fas fa-filter"></i> Aplicar Filtros</button>
+                    </div>
+                </div>
+                
+                <div class="loans-list" id="loans-list">
+                    <p class="loading-message">Carregando empréstimos...</p>
+                </div>
+            </section>
+
+            <section id="gerenciar-livros-section" class="content-section">
+                
+                <div class="section-header">
+                    <h2><i class="fas fa-book-medical"></i> Cadastrar Novo Livro</h2>
+                </div>
+                <div class="form-container" id="book-create-form-container">
+                    <form id="create-book-form">
+                        <div class="form-grid">
+                            <div class="form-group"><label for="book-titulo">Título:</label><input type="text" id="book-titulo" required></div>
+                            <div class="form-group"><label for="book-isbn">ISBN:</label><input type="text" id="book-isbn" required></div>
+                            <div class="form-group"><label for="book-editora">Editora:</label><input type="text" id="book-editora" required></div>
+                            <div class="form-group"><label for="book-ano-publicacao">Ano Publicação:</label><input type="number" id="book-ano-publicacao" required min="1000" max="2100"></div>
+                            <div class="form-group"><label for="book-numero-copias">Nº Cópias (Estoque):</label><input type="number" id="book-numero-copias" required min="1"></div>
+                            <div class="form-group"><label for="book-autor-id">Autor:</label><select id="book-autor-id" required><option value="" disabled selected>Carregando autores...</option></select></div>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="book-generos-ids">Gêneros (Selecione um ou mais):</label>
+                            <select id="book-generos-ids" multiple size="5" required>
+                                <option value="" disabled>Carregando gêneros...</option>
+                            </select>
+                            <small>Use Ctrl/Cmd para selecionar múltiplos.</small>
+                        </div>
+                        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Salvar Livro</button>
+                    </form>
+                </div>
+
+                <div class="section-header">
+                <h2><i class="fas fa-trash-alt"></i> Excluir Livro e Empréstimos</h2>
+                </div>
+                <div class="form-container" id="book-delete-form-container">
+                    <form id="delete-book-form">
+                        <div class="form-group">
+                            <label for="delete-book-id">Livro a ser Excluído:</label>
+                            <select id="delete-book-id" required>
+                                <option value="" disabled selected>Carregando livros...</option>
+                            </select>
+                            <small>A exclusão só será permitida se todos os empréstimos relacionados estiverem como DEVOLVIDO.</small>
+                        </div>
+                        <button type="submit" class="btn-danger"><i class="fas fa-times-circle"></i> Excluir Livro e Empréstimos</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="gerenciar-autores-section" class="content-section">
+                
+                <div class="section-header">
+                    <h2><i class="fas fa-user-plus"></i> Cadastrar Novo Autor</h2>
+                </div>
+                <div class="form-container" id="author-create-form-container">
+                    <form id="create-author-form">
+                        <div class="form-grid">
+                            <div class="form-group"><label for="author-nome">Nome:</label><input type="text" id="author-nome" required></div>
+                            <div class="form-group"><label for="author-sobrenome">Sobrenome:</label><input type="text" id="author-sobrenome" required></div>
+                            <div class="form-group"><label for="author-data-nascimento">Data de Nascimento:</label><input type="date" id="author-data-nascimento" required></div>
+                            <div class="form-group"><label for="author-nacionalidade">Nacionalidade:</label><input type="text" id="author-nacionalidade" required></div>
+                        </div>
+                        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Salvar Autor</button>
+                    </form>
+                </div>
+                
+                <div class="section-header">
+                    <h2><i class="fas fa-trash-alt"></i> Excluir Autor</h2>
+                </div>
+                <div class="form-container" id="author-delete-form-container">
+                    <form id="delete-author-form">
+                        <div class="form-group">
+                            <label for="delete-author-id">Autor a ser Excluído:</label>
+                            <select id="delete-author-id" required>
+                                <option value="" disabled selected>Carregando autores...</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-danger"><i class="fas fa-times-circle"></i> Excluir Autor Permanentemente</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="gerenciar-generos-section" class="content-section">
+                
+                <div class="section-header">
+                    <h2><i class="fas fa-plus"></i> Cadastrar Novo Gênero</h2>
+                </div>
+                <div class="form-container" id="genre-create-form-container">
+                    <form id="create-genre-form">
+                        <div class="form-group">
+                            <label for="genre-nome">Nome do Gênero:</label>
+                            <input type="text" id="genre-nome" required>
+                        </div>
+                        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Salvar Gênero</button>
+                    </form>
+                </div>
+
+                <div class="section-header">
+                    <h2><i class="fas fa-trash-alt"></i> Excluir Gênero</h2>
+                </div>
+                <div class="form-container" id="genre-delete-form-container">
+                    <form id="delete-genre-form">
+                        <div class="form-group">
+                            <label for="delete-genre-id">Gênero a ser Excluído:</label>
+                            <select id="delete-genre-id" required>
+                                <option value="" disabled selected>Carregando gêneros...</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-danger"><i class="fas fa-times-circle"></i> Excluir Gênero Permanentemente</button>
+                    </form>
+                </div>
+            </section>
+            
+            <section id="catalogo-section" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-book-reader"></i> Consulta de Catálogo</h2>
+                </div>
+                <div class="book-grid" id="book-grid-admin">
+                    <p class="loading-message">Carregando catálogo...</p>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <div id="custom-confirm-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3 id="modal-title">Confirmação Necessária</h3>
+            </div>
+            <p id="modal-message">Você tem certeza que deseja realizar esta ação?</p>
+            <div class="modal-actions">
+                <button id="btn-cancel" class="btn-secondary"><i class="fas fa-times"></i> Cancelar</button>
+                <button id="btn-confirm" class="btn-danger"><i class="fas fa-check"></i> Confirmar Exclusão</button>
+            </div>
+        </div>
+    </div>
+    <script src="../machine/dashboard_bibliotecario.js"></script>
+</body>
+</html>

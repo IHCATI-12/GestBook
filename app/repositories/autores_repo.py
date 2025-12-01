@@ -1,4 +1,5 @@
 from app.models.autores_models import Autor
+from app.models.livro_models import Livro
 from app.schemas.autores_schemas import AutorCreateSchema, AutorUpdateSchema
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
@@ -40,10 +41,13 @@ def deletar_autor(db: Session, autor_id: int) -> None:
     autor_db = db.query(Autor).filter(Autor.autor_id == autor_id).first()
     if not autor_db:
         raise HTTPException(status_code=404, detail="Autor não encontrado")
-    livros_associados = db.query(Autor).filter(Autor.autor_id == autor_id).first()
+    livros_associados = db.query(Livro).filter(Livro.autor_id == autor_id).first()
     if livros_associados:
         raise HTTPException(status_code=400, detail=f"Não é possível deletar o autor {autor_db.nome} pois existem livros associados a ele")
     db.delete(autor_db)
     db.commit()
 
+
+def buscar_autor_por_id(db: Session, autor_id: int) -> Optional[Autor]:
+    return db.query(Autor).filter(Autor.autor_id == autor_id).first()
 

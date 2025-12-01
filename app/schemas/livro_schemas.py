@@ -8,10 +8,10 @@ class LivroBaseSchema(BaseModel):
     ano_publicacao: Optional[int] = None
     numero_copias: int = Field(..., ge=0)
     autor_id: int
-    genero: Optional[str] = None
 
 class LivroCreateSchema(LivroBaseSchema):
-    pass
+    lista_generos_ids: list[int] = Field(...)
+    
 
 class LivroUpdateSchema(BaseModel):
     titulo: Optional[str] = Field(None, max_length=255)
@@ -23,6 +23,18 @@ class LivroUpdateSchema(BaseModel):
 
 class LivroResponseSchema(LivroBaseSchema):
     livro_id: int
+
+    class Config:
+        from_attributes = True
+
+class LivroResponseSimplificado(BaseModel):
+    livro_id: int
+    titulo: str
+    isbn: str
+    editora: str
+    ano_publicacao: Optional[int]
+    numero_copias: int
+    autor_id: int
 
     class Config:
         from_attributes = True

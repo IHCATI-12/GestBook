@@ -1,27 +1,7 @@
 // -------------------------------
-// ANIMAÇÃO DE TROCA DE TELA (Mantido)
-// -------------------------------
-const signUpButton = document.getElementById("signUp");
-const signInButton = document.getElementById("signIn");
-const container = document.getElementById("container");
-
-signUpButton.addEventListener("click", () => {
-    container.classList.add("right-panel-active");
-});
-
-signInButton.addEventListener("click", () => {
-    container.classList.remove("right-panel-active");
-});
-
-// -------------------------------
-// CONFIGURAÇÃO BACKEND
+// CONFIGURAÇÃO BACKEND E FUNÇÕES DE APOIO (Definidas fora do DOMContentLoaded)
 // -------------------------------
 const API_URL = "http://127.0.0.1:8000/auth";
-
-
-// -------------------------------
-// FUNÇÕES DE APOIO (Mantidas)
-// -------------------------------
 
 // Tratamento seguro de JSON para evitar erros de parsing
 async function safeJson(response) {
@@ -32,31 +12,24 @@ async function safeJson(response) {
     }
 }
 
-// Formata a mensagem de erro da API. Se for um array de objetos, lista eles.
+// Formata a mensagem de erro da API.
 function formatErrorMessage(data) {
     if (Array.isArray(data?.detail)) {
-        // Assume que 'detail' é um array de objetos de erro (como em validação Pydantic)
         return data.detail.map(err => {
-            // Se houver "loc" (location), mostra o campo. Ex: "Email: campo inválido"
             const field = err.loc ? err.loc[err.loc.length - 1] : "Erro";
-            // --- REGRA DE PERSONALIZAÇÃO DE E-MAIL ---
+
             if (field === 'email' && err.msg.includes('@-sign')) {
                 return 'Por favor, insira um endereço de e-mail válido.';
             }
-
-            // --- NOVA REGRA DE PERSONALIZAÇÃO DE SENHA ---
             if (field === 'senha' && err.msg.includes('at least 6 characters')) {
                 return 'A senha deve ter no mínimo 6 caracteres.';
             }
-            // --- NOVA REGRA DE PERSONALIZAÇÃO DE NOME ---
             if (field === 'nome' && err.msg.includes('at least 1 character')) {
                 return 'Nome: O campo Nome é obrigatório.';
             }
-            // ------------------------------------
             return `${field}: ${err.msg}`;
         }).join(" | ");
     }
-    // Retorna a mensagem padrão ou uma string vazia
     return data?.detail || "Erro desconhecido ao processar sua requisição.";
 }
 
@@ -68,7 +41,6 @@ function showToast(message) {
 
     document.body.appendChild(toast);
 
-    // Usa um pequeno delay para garantir a transição
     setTimeout(() => toast.classList.add("show"), 20);
 
     setTimeout(() => {
@@ -77,120 +49,153 @@ function showToast(message) {
     }, 2500);
 }
 
-// Mensagens dentro do formulário
+// Mensagens dentro do formulário (Restaurado e Corrigido)
 function showFormMessage(elementId, message, type = "error") {
     const el = document.getElementById(elementId);
+    if (!el) return; // Segurança extra caso o ID não exista
+
     el.className = `form-msg ${type}`;
     el.innerText = message;
     el.style.display = "block";
-    // Oculta após 5 segundos, a não ser que seja um erro
+
+    // Oculta após 5 segundos
     if (type === "success") {
-         setTimeout(() => el.style.display = "none", 5000);
+        setTimeout(() => el.style.display = "none", 5000);
     }
 }
 
 
-// -------------------------------
-// REGISTRO DE USUÁRIO (Mantido)
-// -------------------------------
-document.getElementById("btn_registrar").addEventListener("click", async (e) => {
-    e.preventDefault();
+// -----------------------------------------------------
+// 🚀 LÓGICA DE EXECUÇÃO (GARANTIDA VIA DOMContentLoaded)
+// -----------------------------------------------------
 
-    const nome = document.getElementById("reg_nome").value.trim();
-    const email = document.getElementById("reg_email").value.trim();
-    const senha = document.getElementById("reg_senha").value.trim();
-    const role = document.querySelector('input[name="user_type"]:checked').value;
+document.addEventListener("DOMContentLoaded", () => {
 
-    const payload = { nome, email, senha, role };
-    document.getElementById("reg_msg").style.display = "none"; // Limpa mensagens anteriores
+    // -------------------------------
+    // ANIMAÇÃO DE TROCA DE TELA 
+    // -------------------------------
+    const signUpButton = document.getElementById("signUp");
+    const signInButton = document.getElementById("signIn");
+    const container = document.getElementById("container");
 
-    try {
-        const resp = await fetch(`${API_URL}/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+    if (signUpButton && signInButton && container) {
+        signUpButton.addEventListener("click", () => {
+            container.classList.add("right-panel-active");
         });
 
-        const data = await safeJson(resp);
-
-        if (!resp.ok) {
-            // Usa a função de formatação para exibir erros legíveis
-            const errorMessage = formatErrorMessage(data);
-            showFormMessage("reg_msg", errorMessage, "error");
-            return;
-        }
-
-        showFormMessage("reg_msg", "Usuário registrado com sucesso! Faça login.", "success");
-        showToast("✅ Cadastro realizado com sucesso!");
-
-        // Opcional: Limpa os campos após o registro
-        document.getElementById("reg_nome").value = "";
-        document.getElementById("reg_email").value = "";
-        document.getElementById("reg_senha").value = "";
-
-    } catch (err) {
-        showFormMessage("reg_msg", "Erro ao conectar com o servidor. Verifique a API.", "error");
+        signInButton.addEventListener("click", () => {
+            container.classList.remove("right-panel-active");
+        });
     }
-});
 
 
-// -------------------------------
-// LOGIN DE USUÁRIO (Corrigido o LocalStorage e Redirecionamento)
-// -------------------------------
-document.getElementById("btn_login").addEventListener("click", async (e) => {
-    e.preventDefault();
+    // -------------------------------
+    // REGISTRO DE USUÁRIO
+    // -------------------------------
+    const btnRegistrar = document.getElementById("btn_registrar");
 
-    const email = document.getElementById("log_email").value.trim();
-    const senha = document.getElementById("log_senha").value.trim();
+    if (btnRegistrar) {
+        btnRegistrar.addEventListener("click", async (e) => {
+            e.preventDefault();
 
-    const payload = { email, senha };
-    document.getElementById("log_msg").style.display = "none"; // Limpa mensagens anteriores
+            const nome = document.getElementById("reg_nome")?.value.trim();
+            const email = document.getElementById("reg_email")?.value.trim();
+            const senha = document.getElementById("reg_senha")?.value.trim();
+            const userTypeRadio = document.querySelector('input[name="user_type"]:checked');
 
-    try {
-        const resp = await fetch(`${API_URL}/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            if (!nome || !email || !senha || !userTypeRadio) {
+                showFormMessage("reg_msg", "Preencha todos os campos obrigatórios.", "error");
+                return;
+            }
+            const role = userTypeRadio.value;
+
+            const payload = { nome, email, senha, role };
+            document.getElementById("reg_msg").style.display = "none";
+
+            try {
+                const resp = await fetch(`${API_URL}/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await safeJson(resp);
+
+                if (!resp.ok) {
+                    const errorMessage = formatErrorMessage(data);
+                    showFormMessage("reg_msg", errorMessage, "error");
+                    return;
+                }
+
+                showFormMessage("reg_msg", "Usuário registrado com sucesso! Faça login.", "success");
+                showToast("✅ Cadastro realizado com sucesso!");
+
+                document.getElementById("reg_nome").value = "";
+                document.getElementById("reg_email").value = "";
+                document.getElementById("reg_senha").value = "";
+
+            } catch (err) {
+                showFormMessage("reg_msg", "Erro ao conectar com o servidor. Verifique a API.", "error");
+            }
         });
+    }
+    // -------------------------------
+    // LOGIN DE USUÁRIO
+    // -------------------------------
+    const btnLogin = document.getElementById("btn_login");
 
-        const data = await safeJson(resp);
+    if (btnLogin) {
+        btnLogin.addEventListener("click", async (e) => {
+            e.preventDefault();
 
-        if (!resp.ok) {
-            // Usa a função de formatação para exibir erros legíveis
-            const errorMessage = formatErrorMessage(data);
-            showFormMessage("log_msg", errorMessage, "error");
-            return;
-        }
+            const email = document.getElementById("log_email")?.value.trim();
+            const senha = document.getElementById("log_senha")?.value.trim();
 
-        // --- Lógica de Sucesso ---
+            if (!email || !senha) {
+                showFormMessage("log_msg", "E-mail e senha são obrigatórios.", "error");
+                return;
+            }
 
-        // 🚨 CORREÇÃO PRINCIPAL: Salva o nome do usuário na chave 'user_name' para consistência.
-        // Assumindo que 'data.nome' retorna o nome completo ("Ulisses Soares Filho").
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
-        localStorage.setItem("user_name", data.nome); // <--- MUDANÇA AQUI!
+            const payload = { email, senha };
+            document.getElementById("log_msg").style.display = "none";
 
-        showToast(`Bem-vindo, ${data.nome.split(' ')[0]}!`); // Mostra o primeiro nome no toast
+            try {
+                const resp = await fetch(`${API_URL}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
 
-        // Redirecionamento condicional
-        const role = data.role.toLowerCase();
-        
-        // 🚨 PADRÃO: Defina o padrão para o leitor (já que a maioria será leitor)
-        let redirectPage = "../skeleton/dashboard_leitor.html";
-        
-        if (role === 'bibliotecario') {
-            redirectPage = "../pages/bibliotecario/dashboard.html";
-        } 
-        
-        // Se a role for 'leitor', o valor padrão já é o correto, não precisa de 'else if'.
-        // Se for outra coisa, vai para o leitor.
+                const data = await safeJson(resp);
 
-        // Redireciona
-        setTimeout(() => {
-            window.location.href = redirectPage;
-        }, 600);
+                if (!resp.ok) {
+                    const errorMessage = formatErrorMessage(data);
+                    showFormMessage("log_msg", errorMessage, "error");
+                    return;
+                }
 
-    } catch (err) {
-        showFormMessage("log_msg", "Erro ao conectar com o servidor. Verifique a API.", "error");
+                // --- Lógica de Sucesso CORRIGIDA ---
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("role", data.role);
+                localStorage.setItem("user_name", data.nome);
+                localStorage.setItem("user_id", data.id); // <<< LINHA ADICIONADA/CORRIGIDA
+
+                showToast(`Bem-vindo, ${data.nome.split(' ')[0]}!`);
+
+                const role = data.role.toLowerCase();
+                let redirectPage = "../skeleton/dashboard_leitor.html";
+
+                if (role === 'bibliotecario') {
+                    redirectPage = "../skeleton/dashboard_bibliotecario.html";
+                }
+
+                setTimeout(() => {
+                    window.location.href = redirectPage;
+                }, 600);
+
+            } catch (err) {
+                showFormMessage("log_msg", "Erro ao conectar com o servidor. Verifique a API.", "error");
+            }
+        });
     }
 });

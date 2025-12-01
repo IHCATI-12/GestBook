@@ -14,6 +14,7 @@ class LoginResponseFrontendSchema(BaseModel):
     role: str
     nome: str
     email: EmailStr
+    id: int
     
     class Config:
         from_attributes = True

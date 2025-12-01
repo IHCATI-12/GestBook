@@ -6,120 +6,75 @@
     <title>Dashboard do Leitor | GestBook</title>
     <link rel="stylesheet" href="../styles/dashboard_leitor.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-    <div class="dashboard-wrapper">
-        
-        <header class="top-header">
-            <button class="menu-toggle"><i class="fas fa-bars"></i></button>
-            <div class="search-bar">
-                <input type="text" placeholder="Encontre um livro por: nome ou autor...">
-                <button><i class="fas fa-search"></i></button>
-            </div>
-            <div class="user-profile">
-                <span id="user-name">Carregando...</span> 
-                <div class="user-avatar" id="user-avatar-initial">C</div>
-            </div>
-        </header>
+    <div class="dashboard-container">
 
-        <div class="main-layout">
-            
-            <aside class="sidebar">
-                <div class="sidebar-section">
-                    <h2>Gêneros</h2>
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo">GestBook</span>
+            </div>
+            <nav class="sidebar-nav">
+                <ul class="main-menu">
+                    <li class="menu-item active" data-section="catalogo-section">
+                        <i class="fas fa-book"></i> Catálogo
+                    </li>
+                    <li class="menu-item" data-section="emprestimos-section">
+                        <i class="fas fa-handshake"></i> Meus Empréstimos
+                    </li>
+                    <li class="menu-item" id="logout-button">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </li>
+                </ul>
+                <div class="genre-section">
+                    <h3><i class="fas fa-tags"></i> Gêneros</h3>
                     <ul class="genre-list">
-                        <li><a href="#">Terror Gótico</a></li>
-                        <li><a href="#">Fantasia Épica</a></li>
-                        <li><a href="#">Contos</a></li>
-                        <li><a href="#">História</a></li>
-                        <li><a href="#">Ciência</a></li>
-                        <li><a href="#">Filosofia</a></li>
-                        <li><a href="#">Poesia</a></li>
-                        <li><a href="#">Aventura</a></li>
-                        <li><a href="#">Mistério</a></li>
-                    </ul>
+                        </ul>
                 </div>
-            </aside>
+            </nav>
+        </aside>
 
-            <main class="content-area">
+        <main class="main-content">
+            <header class="top-header">
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Pesquisar livros por título ou autor...">
+                    <button id="search-button"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="user-info">
+                    <span id="user-name" class="user-name">Carregando...</span>
+                    <div class="user-avatar" id="user-avatar-initial">U</div>
+                </div>
+            </header>
 
-                <section class="catalogo-livros">
-                    <h2>📚 Catálogo Sombrio</h2>
-                    <div class="livro-grid">
-                        
-                        <div class="livro-card">
-                            <div class="capa-placeholder"></div>
-                            <div class="card-info">
-                                <h3 class="card-titulo">O Castelo de Drácula</h3>
-                                <p class="card-detalhe">1897 | Bram Stoker</p>
-                            </div>
-                            <button class="btn-detalhes" title="Solicitar empréstimo"><i class="fas fa-book-open"></i></button>
-                        </div>
-                        
-                        <div class="livro-card"><div class="capa-placeholder"></div><div class="card-info"><h3 class="card-titulo">O Titulo de Teste</h3><p class="card-detalhe">2025 | Autor Desconhecido</p></div><button class="btn-detalhes" title="Solicitar empréstimo"><i class="fas fa-book-open"></i></button></div>
-                        <div class="livro-card"><div class="capa-placeholder"></div><div class="card-info"><h3 class="card-titulo">A Maldição da Lua</h3><p class="card-detalhe">2020 | Autor Mistério</p></div><button class="btn-detalhes" title="Solicitar empréstimo"><i class="fas fa-book-open"></i></button></div>
-                        <div class="livro-card"><div class="capa-placeholder"></div><div class="card-info"><h3 class="card-titulo">O Grimório</h3><p class="card-detalhe">1600 | Alquimista</p></div><button class="btn-detalhes" title="Solicitar empréstimo"><i class="fas fa-book-open"></i></button></div>
-                        <div class="livro-card"><div class="capa-placeholder"></div><div class="card-info"><h3 class="card-titulo">Sussurros na Noite</h3><p class="card-detalhe">2023 | Vampiro</p></div><button class="btn-detalhes" title="Solicitar empréstimo"><i class="fas fa-book-open"></i></button></div>
-                        <div class="livro-card"><div class="capa-placeholder"></div><div class="card-info"><h3 class="card-titulo">O Abismo</h3><p class="card-detalhe">2019 | Desconhecido</p></div><button class="btn-detalhes" title="Solicitar empréstimo"><i class="fas fa-book-open"></i></button></div>
-                        <div class="livro-card"><div class="capa-placeholder"></div><div class="card-info"><h3 class="card-titulo">A Sombra</h3><p class="card-detalhe">2021 | Fantasma</p></div><button class="btn-detalhes" title="Solicitar empréstimo"><i class="fas fa-book-open"></i></button></div>
-                        <div class="livro-card"><div class="capa-placeholder"></div><div class="card-info"><h3 class="card-titulo">A Capa</h3><p class="card-detalhe">2022 | Bruxa</p></div><button class="btn-detalhes" title="Solicitar empréstimo"><i class="fas fa-book-open"></i></button></div>
-                        
+            <section id="catalogo-section" class="content-section active">
+                <div class="section-header">
+                    <h2><i class="fas fa-book-open"></i> Catálogo de Livros</h2>
+                </div>
+                <div class="book-grid" id="book-grid">
+                    <p class="loading-message">Carregando catálogo...</p>
+                </div>
+            </section>
+
+            <section id="emprestimos-section" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-history"></i> Meus Empréstimos Ativos</h2>
+                    <div class="filters">
+                        <label for="filter-start-date">De:</label>
+                        <input type="date" id="filter-start-date">
+                        <label for="filter-end-date">Até:</label>
+                        <input type="date" id="filter-end-date">
+                        <button id="apply-loan-filter"><i class="fas fa-filter"></i> Filtrar</button>
                     </div>
-                </section>
-                
-                <hr>
+                </div>
+                <div class="loans-list" id="loans-list">
+                    <p class="loading-message">Carregando empréstimos...</p>
+                </div>
+            </section>
 
-                <section class="emprestimos-ativos">
-                    <h2>⏳ Empréstimos Ativos</h2>
-
-                    <div class="emprestimos-container">
-                        
-                        <div class="filtro-datas">
-                            <label for="data-inicio">Data Início:</label>
-                            <input type="date" id="data-inicio">
-                            
-                            <label for="data-fim">Data Fim:</label>
-                            <input type="date" id="data-fim">
-                            
-                            <button class="btn-filtro"><i class="fas fa-filter"></i> Filtrar</button>
-                        </div>
-
-                        <table class="tabela-emprestimos">
-                            <thead>
-                                <tr>
-                                    <th>Título do Livro</th>
-                                    <th>Data de Devolução</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>O Castelo de Drácula (1ª Ed.)</td>
-                                    <td class="data-devolucao">30 / 11 / 2025</td>
-                                    <td><button class="btn-devolver" title="Devolver livro"><i class="fas fa-undo-alt"></i> Devolver</button></td>
-                                </tr>
-                                <tr>
-                                    <td>História do Vampiro</td>
-                                    <td class="data-devolucao">05 / 12 / 2025</td>
-                                    <td><button class="btn-devolver"><i class="fas fa-undo-alt"></i> Devolver</button></td>
-                                </tr>
-                                <tr>
-                                    <td>Poemas Sombrios</td>
-                                    <td class="data-devolucao expirando">22 / 11 / 2025</td>
-                                    <td><button class="btn-devolver"><i class="fas fa-undo-alt"></i> Devolver</button></td>
-                                </tr>
-                                <tr><td>Livro de Teste 1</td><td class="data-devolucao">15 / 12 / 2025</td><td><button class="btn-devolver"><i class="fas fa-undo-alt"></i> Devolver</button></td></tr>
-                                <tr><td>Livro de Teste 2</td><td class="data-devolucao">01 / 01 / 2026</td><td><button class="btn-devolver"><i class="fas fa-undo-alt"></i> Devolver</button></td></tr>
-                                <tr><td>Livro de Teste 3</td><td class="data-devolucao">10 / 12 / 2025</td><td><button class="btn-devolver"><i class="fas fa-undo-alt"></i> Devolver</button></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-                
-            </main>
-        </div>
-
+        </main>
     </div>
+
     <script src="../machine/dashboard_leitor.js"></script>
 </body>
 </html>

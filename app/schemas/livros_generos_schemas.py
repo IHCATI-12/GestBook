@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class LivrosGenerosSchemas(BaseModel):
     livro_id: int
-    genero_id: int
+    generos_ids: list[int]
 
     class Config:
-        orm_mode = True
+        from_attributes = True

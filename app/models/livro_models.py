@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, CheckConstraint
 from app.db.base import Base
+from sqlalchemy.orm import relationship
 
 class Livro(Base):
     __tablename__ = "livro"
@@ -12,6 +13,11 @@ class Livro(Base):
     numero_copias = Column(Integer, nullable=False, default=1)
     autor_id = Column(Integer, ForeignKey("autores.autor_id", ondelete="RESTRICT"), nullable=False)
 
+    generos = relationship(
+        "Genero",                   # Nome da classe do modelo Genero (você usou "Genero")
+        secondary="livros_generos", # Nome da sua tabela de junção (correto)
+        back_populates="livros"     # Nome da propriedade no modelo Genero
+    )
 
     # ---- CHECK Constraints ----
     __table_args__ = (
