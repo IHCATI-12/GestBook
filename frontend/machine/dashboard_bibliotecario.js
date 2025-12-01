@@ -1,11 +1,20 @@
-// dashboard_bibliotecario.js
+// 🚨 FUNÇÃO DE CÁLCULO DE DATA (DEVE VIR PRIMEIRO)
+/**
+ * Função utilitária para calcular a data de amanhã no formato YYYY-MM-DD.
+ */
+function getTomorrowDate() {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+}
 
 // -------------------------------
 // CONFIGURAÇÃO DA API E ESTADO GLOBAL
 // -------------------------------
 const API_URL = "http://127.0.0.1:8000";
 let BIBLIOTECARIO_ID = null; 
-const TODAY = new Date().toISOString().split('T')[0]; // Data de hoje no formato YYYY-MM-DD
+const TODAY = new Date().toISOString().split('T')[0]; 
+const TOMORROW = getTomorrowDate(); // AGORA FUNCIONA!
 let activeLoansCache = []; // Cache para armazenar os empréstimos ativos e aplicar filtros
 
 
@@ -21,20 +30,16 @@ let activeLoansCache = []; // Cache para armazenar os empréstimos ativos e apli
  */
 function showMessage(containerId, message, isError = false) {
     const container = document.getElementById(containerId);
-    // Tenta encontrar um container mais genérico se o ID específico não for um form-container.
     const targetContainer = container || document.getElementById('loan-create-form-container'); 
     if (!targetContainer) return;
 
-    // Remove mensagens antigas da mesma natureza
     targetContainer.querySelectorAll('.error-message, .success-message').forEach(el => el.remove());
 
-    // Cria um elemento para a mensagem dentro do container
     const messageElement = document.createElement('p');
     const messageClass = isError ? 'error-message' : 'success-message';
     messageElement.className = messageClass;
     messageElement.innerHTML = message;
     
-    // Adiciona a mensagem e define um timeout para removê-la
     targetContainer.insertBefore(messageElement, targetContainer.firstChild);
 
     setTimeout(() => {
@@ -49,8 +54,17 @@ function showMessage(containerId, message, isError = false) {
  */
 function extractApiErrorMessage(result) {
     if (result && result.detail) {
-        // Trata erros de validação do Pydantic (status 422)
         if (Array.isArray(result.detail) && result.detail.length > 0) {
+            
+            // Tratamento do erro da data (vinda do backend)
+            const dataError = result.detail.find(err => 
+                err.msg && err.msg.includes('A data de devolução prevista deve ser posterior')
+            );
+
+            if (dataError) {
+                 return `❌ **Data Inválida**: A devolução deve ser agendada a partir de ${TOMORROW} (dia de amanhã).`;
+            }
+            
             const dateError = result.detail.find(err => err.loc && err.loc.includes('data_nascimento'));
             
             if (dateError) {
@@ -67,21 +81,14 @@ function extractApiErrorMessage(result) {
             }).join('; ');
             return `Erros de Validação: ${errorMessages}`;
         }
-        // Trata erros de detalhe genérico
         return result.detail.toString();
     }
-    // Trata outros formatos
     return 'Erro desconhecido. Verifique o console para mais detalhes.';
 }
 
 
 /**
  * SUBSTITUIÇÃO PARA window.confirm()
- * Exibe um modal customizado de confirmação.
- * @param {string} title - Título do modal.
- * @param {string} message - Mensagem de confirmação.
- * @param {string} confirmText - Texto do botão de confirmação.
- * @returns {Promise<boolean>} - Resolve para true se confirmado, false se cancelado.
  */
 function customConfirm(title, message, confirmText = 'Confirmar') {
     return new Promise(resolve => {
@@ -95,11 +102,9 @@ function customConfirm(title, message, confirmText = 'Confirmar') {
         modalMessage.textContent = message;
         btnConfirm.textContent = confirmText;
 
-        // Limpa listeners anteriores
         btnConfirm.onclick = null;
         btnCancel.onclick = null;
 
-        // Configura ações
         btnConfirm.onclick = () => {
             modal.classList.remove('active');
             resolve(true);
@@ -110,7 +115,6 @@ function customConfirm(title, message, confirmText = 'Confirmar') {
             resolve(false);
         };
 
-        // Exibe o modal
         modal.classList.add('active');
     });
 }
@@ -118,7 +122,6 @@ function customConfirm(title, message, confirmText = 'Confirmar') {
 
 /**
  * Ativa uma seção de conteúdo específica e desativa as outras.
- * @param {string} sectionId - O ID da seção a ser ativada (ex: 'emprestimos-section').
  */
 function activateSection(sectionId) {
     document.querySelectorAll('.content-section').forEach(section => {
@@ -126,7 +129,6 @@ function activateSection(sectionId) {
     });
     document.getElementById(sectionId).classList.add('active');
 
-    // Atualiza o menu e o título do header
     document.querySelectorAll('.main-menu .menu-item').forEach(item => {
         item.classList.remove('active');
         if (item.getAttribute('data-section') === sectionId) {
@@ -136,14 +138,12 @@ function activateSection(sectionId) {
         }
     });
     
-    // Ações específicas ao trocar de seção
     switch (sectionId) {
         case 'dashboard-home':
             loadSummaryData();
             break;
         case 'emprestimos-section':
             loadLoanCreationData();
-            // 🚨 Limpa o cache ao entrar na seção para buscar dados mais frescos
             activeLoansCache = []; 
             loadActiveLoansAdmin({}); 
             break;
@@ -165,11 +165,6 @@ function activateSection(sectionId) {
 
 /**
  * Função auxiliar para preencher um select com dados da API.
- * @param {string} url - A URL da API para buscar os dados.
- * @param {string} selectId - O ID do elemento select.
- * @param {string} keyId - A chave do objeto a ser usada como `value` (ex: 'autor_id').
- * @param {function|string} keyName - A chave do objeto ou função para formatar o `textContent`.
- * @param {string} defaultText - Texto da opção padrão.
  */
 async function fillSelect(url, selectId, keyId, keyName, defaultText) {
     const select = document.getElementById(selectId);
@@ -194,12 +189,11 @@ async function fillSelect(url, selectId, keyId, keyName, defaultText) {
 
         data.forEach(item => {
             const option = document.createElement('option');
-            option.value = item[keyId]; // Usa a chave 'keyId' para o valor
+            option.value = item[keyId]; 
             option.textContent = typeof keyName === 'function' ? keyName(item) : item[keyName];
             select.appendChild(option);
         });
         
-        // Se a primeira opção for a de carregamento, remove-a se houver dados
         if (data.length > 0) {
             select.querySelector('option[disabled][selected]').textContent = defaultText;
         } else {
@@ -567,8 +561,8 @@ async function loadLoanCreationData() {
         'Selecione um Livro'
     );
     
-    // Define a data mínima para devolução (hoje)
-    document.getElementById('loan-data-devolucao').setAttribute('min', TODAY);
+    // Define a data mínima para devolução (amanhã)
+    document.getElementById('loan-data-devolucao').setAttribute('min', TOMORROW);
 }
 
 // CREATE
@@ -605,15 +599,23 @@ async function createLoan(event) {
             showMessage(containerId, `✅ Empréstimo registrado com sucesso!`, false);
             form.reset();
             
-            // 1. Recarrega o resumo
             loadSummaryData(); 
-            // 2. Recarrega os dropdowns (remove o livro do estoque)
             loadLoanCreationData(); 
-            // 3. 🚨 CORREÇÃO: Limpa o cache para forçar a busca do novo item na API!
             activeLoansCache = []; 
             loadActiveLoansAdmin({}); 
             
         } else {
+            // Tratamento do erro da data de devolução que veio do backend (422)
+            if (response.status === 422 && result.detail && Array.isArray(result.detail)) {
+                 const dataError = result.detail.find(err => err.msg && err.msg.includes('data de devolução prevista deve ser posterior'));
+                 if (dataError) {
+                    // Usar a mensagem corrigida do extractApiErrorMessage
+                    const customErrorMsg = extractApiErrorMessage(result);
+                    showMessage(containerId, customErrorMsg, true);
+                    return;
+                 }
+            }
+
             const errorMsg = extractApiErrorMessage(result);
             showMessage(containerId, `❌ Falha ao registrar empréstimo: ${errorMsg}`, true);
         }
@@ -638,7 +640,6 @@ async function loadActiveLoansAdmin(filters = {}) {
         url = `${API_URL}/emprestimos/leitor/${leitorIdFiltro}`; 
     }
     
-    // Lógica de cache: Se mudou de leitor ou o cache foi limpo, recarrega da API
     const shouldReloadFromApi = activeLoansCache.length === 0 || activeLoansCache.__url !== url;
 
     try {
@@ -665,7 +666,6 @@ async function loadActiveLoansAdmin(filters = {}) {
             activeLoansCache.__url = url; 
         }
         
-        // Aplica filtros remanescentes (Data e Status)
         const filteredLoans = applyLoanFilters(activeLoansCache, filters);
         renderLoans(filteredLoans, loansList);
 
@@ -678,13 +678,11 @@ async function loadActiveLoansAdmin(filters = {}) {
 function applyLoanFilters(loans, filters) {
     let filtered = loans;
     
-    // Filtro de Data
     const dataPrevista = filters.data_devolucao ? new Date(filters.data_devolucao) : null;
     if (dataPrevista) dataPrevista.setHours(23, 59, 59, 999); 
     
     const statusFiltro = filters.status;
 
-    // 1. Filtro por Data (Se houver)
     if (dataPrevista) {
         filtered = filtered.filter(loan => {
             const loanDate = new Date(loan.data_devolucao_prevista);
@@ -692,19 +690,13 @@ function applyLoanFilters(loans, filters) {
         });
     }
     
-    // 2. Filtro por Status (Lógica Ajustada para valores da API)
     if (statusFiltro) {
-        const hoje = new Date();
-        hoje.setHours(0,0,0,0);
         
         filtered = filtered.filter(loan => {
-            const dataDevolucao = new Date(loan.data_devolucao_prevista);
-            dataDevolucao.setHours(0,0,0,0);
-            
+            const isOverdue = loan.is_atrasado; 
             const apiStatus = (loan.status_emprestimo || '').toLowerCase(); 
 
             const isAtivo = apiStatus === 'emprestado'; 
-            const isOverdue = isAtivo && (dataDevolucao < hoje);
             const isDevolvido = apiStatus === 'devolvido' || apiStatus === 'finalizado';
 
             if (statusFiltro === "Atrasado") {
@@ -714,7 +706,6 @@ function applyLoanFilters(loans, filters) {
                 return isDevolvido; 
                 
             } else if (statusFiltro === "Emprestado") {
-                // Filtra APENAS os emprestados ATIVOS que NÃO estão atrasados (Em dia)
                 return isAtivo && !isOverdue;
             }
 
@@ -733,7 +724,6 @@ async function renderLoans(emprestimos, loansList) {
         return;
     }
 
-    // Criamos um mapa para buscar detalhes de livros e leitores apenas uma vez
     const detailsMap = {};
     const getDetails = async (id, type) => {
         const key = `${type}_${id}`;
@@ -753,19 +743,13 @@ async function renderLoans(emprestimos, loansList) {
         
         const apiStatus = (emprestimo.status_emprestimo || '').toLowerCase();
         
-        // OBTENÇÃO DE DADOS EXTRAS
         const livroTitulo = await getDetails(emprestimo.livro_id, 'livro');
         const leitorNome = await getDetails(emprestimo.leitor_id, 'leitor');
 
         const dataDevolucaoPrevista = new Date(emprestimo.data_devolucao_prevista);
-        const hoje = new Date();
-        hoje.setHours(0,0,0,0);
-        dataDevolucaoPrevista.setHours(0,0,0,0);
 
-        // CÁLCULO DE STATUS E CLASSES
         const isDevolvido = apiStatus === 'devolvido' || apiStatus === 'finalizado';
-        const isAtivo = apiStatus === 'emprestado'; 
-        const isOverdue = isAtivo && (dataDevolucaoPrevista < hoje);
+        const isOverdue = emprestimo.is_atrasado; 
         
         let statusDisplay = '';
         let dueDateClass = '';
@@ -791,7 +775,6 @@ async function renderLoans(emprestimos, loansList) {
         
         const dataDisplayStr = dataToDisplay.toLocaleDateString('pt-BR');
         
-        // CONTEÚDO E BOTÃO CONDICIONAL
         const finishButton = !isDevolvido 
             ? `<button class="btn-finish-loan" data-id="${emprestimo.emprestimo_id}"><i class="fas fa-undo-alt"></i> Finalizar Empréstimo</button>`
             : '';
@@ -808,7 +791,6 @@ async function renderLoans(emprestimos, loansList) {
         `;
         loansList.appendChild(card);
         
-        // Adiciona listener se o botão existir
         if (!isDevolvido) {
             card.querySelector('.btn-finish-loan').addEventListener('click', (e) => {
                 const loanId = e.currentTarget.getAttribute('data-id');
@@ -831,7 +813,6 @@ async function handleFinishLoan(loanId) {
         return;
     }
     
-    // Rota API: /emprestimos/{emprestimo_id}/devolver
     const url = `${API_URL}/emprestimos/${loanId}/devolver`; 
     
     const confirmed = await customConfirm(
@@ -844,7 +825,6 @@ async function handleFinishLoan(loanId) {
         return;
     }
 
-    // Corpo JSON corrigido para o DevolucaoSchema
     const bodyData = { 
         bibliotecario_devolucao_id: parseInt(bibliotecarioId),
         data_devolucao_real: new Date().toISOString() 
@@ -863,19 +843,14 @@ async function handleFinishLoan(loanId) {
         const result = await response.json(); 
 
         if (response.ok) {
-            // MENSAGEM DE SUCESSO CUSTOMIZADA
             showMessage(containerId, `✅ Empréstimo ID ${loanId} finalizado com sucesso!`, false);
             
-            // 1. Recarrega o resumo
             loadSummaryData();
-            // 2. Recarrega os dropdowns (coloca o livro de volta no estoque)
             loadLoanCreationData(); 
-            // 3. 🚨 CORREÇÃO PRINCIPAL: Limpa o cache para forçar a busca de dados novos
             activeLoansCache = []; 
             loadActiveLoansAdmin({}); 
 
         } else {
-            // MENSAGEM DE ERRO CUSTOMIZADA
             const errorMsg = extractApiErrorMessage(result);
             showMessage(containerId, `❌ Falha ao finalizar empréstimo: ${errorMsg}`, true);
             console.error('Detalhe do erro API:', result);
@@ -963,11 +938,9 @@ async function loadBooks(gridElement) {
 
 /**
  * Busca o nome do Leitor (Usuário) pelo ID.
- * Rota API: GET /usuarios/{usuario_id}
  */
 async function fetchLeitorDetails(leitorId) {
     const token = localStorage.getItem('token');
-    // URL CORRETA: Utiliza o prefixo /usuarios/
     const url = `${API_URL}/usuarios/${leitorId}`; 
     try {
         const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -986,11 +959,9 @@ async function fetchLeitorDetails(leitorId) {
 
 /**
  * Busca o título do Livro pelo ID.
- * Rota API: GET /livros/{livro_id}
  */
 async function fetchLivroDetails(livroId) {
     const token = localStorage.getItem('token');
-    // URL CORRETA: Utiliza o prefixo /livros/
     const url = `${API_URL}/livros/${livroId}`; 
     try {
         const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -1046,7 +1017,6 @@ async function loadSummaryData() {
         const allLoans = await response.json();
         
         if (response.ok && Array.isArray(allLoans)) {
-            // Filtra APENAS os empréstimos ativos (status_emprestimo = 'Emprestado')
             const activeLoans = allLoans.filter(loan => (loan.status_emprestimo || '').toLowerCase() === 'emprestado');
             
             const overdueCount = activeLoans.filter(loan => {
@@ -1104,7 +1074,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user_name');
         localStorage.removeItem('user_id');
-        // Redirecionar para a tela de login (ajuste o caminho se necessário)
         window.location.href = '../skeleton/index.html'; 
     });
 
@@ -1127,13 +1096,11 @@ document.addEventListener('DOMContentLoaded', () => {
             data_devolucao: document.getElementById('filter-data-devolucao').value,
             status: document.getElementById('filter-status').value
         };
-        // Carrega do cache e aplica os filtros
         loadActiveLoansAdmin(filters); 
     });
 
 
     // 6. CARREGAR DADOS INICIAIS DA HOME
     loadSummaryData();
-    // Ativa a seção inicial
     activateSection('dashboard-home'); 
 });

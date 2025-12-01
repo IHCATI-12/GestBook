@@ -1,12 +1,13 @@
 from sqlalchemy import Column, Integer, String, DateTime, text, CheckConstraint, ForeignKey
 from app.db.base import Base
 from enum import Enum
+from datetime import date
 
 # Definição do modelo para a coluna 'status_emprestimo' com valores possíveis
 class status_emprestimoEnum(str, Enum):
     EMPRESTADO = "Emprestado" 
     DEVOLVIDO = "Devolvido"
-    ATRASADO = "Atrasado"
+    # ATRASADO = "Atrasado"
 
 class Emprestimo(Base):
     __tablename__ = "emprestimo"
@@ -19,7 +20,16 @@ class Emprestimo(Base):
     data_devolucao_prevista = Column(DateTime, nullable=False)
     data_devolucao_real = Column(DateTime, nullable=True)
     status_emprestimo = Column(String(15), nullable=False, default=status_emprestimoEnum.EMPRESTADO.value)
-
+    
+    @property
+    def is_atrasado(self) -> bool:
+        hoje = date.today()
+        if not self.data_devolucao_prevista: # type: ignore
+            return False
+        data_prevista = self.data_devolucao_prevista.date()
+        is_ativo = self.status_emprestimo.lower() == status_emprestimoEnum.EMPRESTADO.value.lower()
+        return is_ativo and (data_prevista < hoje)
+        
     # ---- CHECK Constraints ----
     __table_args__ = (
         CheckConstraint("status_emprestimo IN ('Emprestado', 'Devolvido', 'Atrasado')", name="check_status_emprestimo"),

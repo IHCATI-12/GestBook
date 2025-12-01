@@ -683,3 +683,40 @@ body {
     display: inline-block;
     margin-top: 5px;
 }
+
+#book-generos-ids {
+    /* Desfaz a altura automática do seletor único padrão */
+    height: 150px; 
+}
+#book-generos-ids option {
+    /* Garante que o fundo das opções individuais seja escuro */
+    background-color: var(--dark-bg);
+    color: var(--light-text);
+    padding: 5px 15px;
+}
+
+/* 2. Estiliza o ÍCONE do Calendário no INPUT DATE */
+/* Isso inverte a cor do ícone padrão do sistema para ser visível no fundo escuro */
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1); 
+    cursor: pointer;
+    /* Ajusta o posicionamento do ícone, se necessário */
+    margin-right: -10px; 
+}
+.form-group input[type="date"]::-moz-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* 3. Estiliza as barras de rolagem para o SELECT MÚLTIPLO */
+/* Torna as barras de rolagem escuras (Apenas Webkit - Chrome/Safari) */
+#book-generos-ids::-webkit-scrollbar {
+    width: 8px;
+}
+#book-generos-ids::-webkit-scrollbar-thumb {
+    background: var(--medium-bg);
+    border-radius: 4px;
+}
+#book-generos-ids::-webkit-scrollbar-track {
+    background: var(--dark-bg);
+}

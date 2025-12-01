@@ -12,6 +12,7 @@
     --secondary-text: #B0B0B0;
     --error-red: #E74C3C;
     --success-green: #2ECC71;
+    --gold-rgb: 212, 175, 55; /* Variável RGB para uso com transparência */
 }
 
 /* Base Styles */
@@ -131,8 +132,42 @@ body {
     gap: 10px;
 }
 
+/* Estilo para o botão "Todos os Livros" (assumindo que seja um button) */
+.genre-section > button {
+    width: 100%;
+    padding: 10px 15px;
+    background-color: var(--gold);
+    color: var(--dark-bg);
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 8px; /* Espaçamento entre o botão e a lista de gêneros */
+    transition: background-color 0.2s ease;
+}
+
+/* CORREÇÃO DO PROBLEMA DE ESPAÇAMENTO:
+   Remove a margem inferior do botão se ele for o último elemento antes da lista */
+.genre-section > button:last-of-type {
+    margin-bottom: 0; 
+}
+
+
+.genre-list {
+    list-style: none;
+    width: 100%;
+    padding: 0;
+}
+
 .genre-list li {
     margin-bottom: 8px;
+}
+
+/* CORREÇÃO DO PROBLEMA DE ESPAÇAMENTO:
+   Remove a margem inferior do último item da lista para consistência */
+.genre-list li:last-child {
+    margin-bottom: 0;
 }
 
 .genre-list a {
@@ -356,51 +391,83 @@ body {
 }
 
 /* Loans List (Meus Empréstimos) */
+
+/* NOVO LAYOUT DE FILTROS */
 .filters {
+    /* Novo Layout: Alinha os itens na horizontal com espaço entre eles */
+    display: grid;
+    /* 4 colunas: Status | De | Até | Botão */
+    grid-template-columns: repeat(3, minmax(150px, 1fr)) auto; 
+    gap: 20px;
+    align-items: flex-end; 
+    width: 100%; 
+    margin-bottom: 10px;
+}
+
+.filters div { 
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column; /* Coloca label em cima do input */
+    gap: 5px;
 }
 
 .filters label {
     color: var(--secondary-text);
     font-size: 14px;
+    font-weight: 500;
 }
 
-.filters input[type="date"] {
-    background-color: var(--dark-bg);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+/* Estilo unificado para inputs e selects */
+.filters input[type="date"],
+.filters select {
+    background-color: var(--medium-bg); /* Fundo mais escuro para destaque */
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: var(--light-text);
-    padding: 8px 12px;
+    padding: 10px 12px;
     border-radius: 8px;
     font-family: 'Poppins', sans-serif;
     font-size: 14px;
     outline: none;
     transition: border-color 0.2s ease;
+    height: 40px; /* Altura fixa para alinhar */
+    width: 100%;
+    /* Reset para customização de select */
+    -webkit-appearance: none; 
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
 }
 
-.filters input[type="date"]:focus {
+.filters input[type="date"]:focus,
+.filters select:focus {
     border-color: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold);
 }
 
+/* Ajuste para o botão */
 .filters button {
     background-color: var(--gold);
     color: var(--dark-bg);
     border: none;
-    padding: 8px 15px;
+    padding: 10px 18px; 
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
     transition: background-color 0.2s ease, transform 0.1s ease;
+    white-space: nowrap; 
+    height: 40px; 
+    /* Garante que o botão fique na última coluna */
+    grid-column: 4 / 5;
 }
 
 .filters button:hover {
     background-color: #f0c950;
 }
+/* FIM NOVO LAYOUT DE FILTROS */
+
 
 .loans-list {
     display: grid;

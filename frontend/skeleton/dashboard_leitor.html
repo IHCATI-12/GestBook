@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
+
 <body>
     <div class="dashboard-container">
 
@@ -30,7 +32,7 @@
                 <div class="genre-section">
                     <h3><i class="fas fa-tags"></i> Gêneros</h3>
                     <ul class="genre-list">
-                        </ul>
+                    </ul>
                 </div>
             </nav>
         </aside>
@@ -58,12 +60,25 @@
 
             <section id="emprestimos-section" class="content-section">
                 <div class="section-header">
-                    <h2><i class="fas fa-history"></i> Meus Empréstimos Ativos</h2>
+                    <h2><i class="fas fa-history"></i> Meus Empréstimos</h2>
                     <div class="filters">
-                        <label for="filter-start-date">De:</label>
-                        <input type="date" id="filter-start-date">
-                        <label for="filter-end-date">Até:</label>
-                        <input type="date" id="filter-end-date">
+                        <div>
+                            <label for="filter-leitor-status">Status:</label>
+                            <select id="filter-leitor-status">
+                                <option value="Emprestado" selected>Emprestado (Ativos)</option>
+                                <option value="Devolvido">Devolvido</option>
+                                <option value="Atrasado">Atrasado</option>
+                                <option value="">Todos os Status</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="filter-start-date">De:</label>
+                            <input type="date" id="filter-start-date">
+                        </div>
+                        <div>
+                            <label for="filter-end-date">Até:</label>
+                            <input type="date" id="filter-end-date">
+                        </div>
                         <button id="apply-loan-filter"><i class="fas fa-filter"></i> Filtrar</button>
                     </div>
                 </div>
@@ -77,4 +92,5 @@
 
     <script src="../machine/dashboard_leitor.js"></script>
 </body>
+
 </html>
