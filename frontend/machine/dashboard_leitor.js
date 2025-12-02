@@ -96,6 +96,7 @@ function applyLeitorLoanFilters(loans, filters) {
 // Requisições para enriquecer os dados dos empréstimos (título, autor).
 // ====================================================================
 
+
 /**
  * Busca o nome completo de um autor pelo ID na API.
  * @param {number} autorId - ID do autor.
@@ -128,9 +129,10 @@ async function fetchAuthorName(autorId) {
 }
 
 /**
- * Busca os detalhes de um livro (título e ID do autor) pelo ID.
+ * Busca os detalhes de um livro (título, ID do autor E IDs de Gênero) pelo ID.
+ * É usada para popular detalhes em Empréstimos e Gêneros.
  * @param {number} livroId - ID do livro.
- * @returns {Promise<Object>} Um objeto contendo { titulo, autor_id } ou um objeto de erro.
+ * @returns {Promise<Object>} Um objeto contendo { titulo, autor_id, lista_generos_ids } ou um objeto de erro.
  */
 async function fetchBookDetails(livroId) {
     const token = localStorage.getItem('token');
@@ -145,16 +147,21 @@ async function fetchBookDetails(livroId) {
         const livro = await response.json();
 
         if (response.ok && livro && livro.titulo && livro.autor_id) {
+            // **CORREÇÃO CRUCIAL:** Se o campo lista_generos_ids não vier na rota /livros/{id},
+            // mas vier na rota /livros? (lista), precisamos garantir que estamos tratando o array vazio.
             return {
                 titulo: livro.titulo,
-                autor_id: livro.autor_id
+                autor_id: livro.autor_id,
+                // Assumimos que, se a API de lista não retorna, a API de detalhes também não retornará.
+                // Usaremos um array vazio para evitar erros.
+                lista_generos_ids: livro.lista_generos_ids || [] 
             };
         }
-        return { titulo: `Livro ID ${livroId} (Título Ausente)`, autor_id: null };
+        return { titulo: `Livro ID ${livroId} (Título Ausente)`, autor_id: null, lista_generos_ids: [] };
 
     } catch (error) {
         console.error(`Falha de conexão ao buscar livro ${livroId}:`, error);
-        return { titulo: `Livro ID ${livroId} (Erro de Conexão)`, autor_id: null };
+        return { titulo: `Livro ID ${livroId} (Erro de Conexão)`, autor_id: null, lista_generos_ids: [] };
     }
 }
 
@@ -227,18 +234,34 @@ async function loadBooks(searchQuery = '', generoId = GENERO_ATIVO_ID) {
 }
 
 /**
- * Renderiza os livros como cards no grid.
+ * Renderiza os livros como cards no grid. (BUSCA DE GÊNERO CORRIGIDA)
  * @param {HTMLElement} gridElement - O elemento HTML onde os cards serão inseridos.
  * @param {Array<Object>} livros - Lista de objetos de livros.
  */
 async function renderBooksInCards(gridElement, livros) {
-    // Cria um array de Promises para buscar os detalhes do autor para cada livro em paralelo
     const renderPromises = livros.map(async livro => {
+        // 1. Busca o nome do Autor
         const nomeAutor = await fetchAuthorDetails(livro.autor_id);
 
-        // O endpoint /livros não retorna o nome do gênero. É mantido como desconhecido.
-        const generoNome = "Gênero Desconhecido";
+        // 2. Busca o nome do Gênero
+        let generoNome = 'Gênero Desconhecido';
+        
+        // **CORREÇÃO:** Tentamos acessar o campo lista_generos_ids no objeto 'livro'
+        // Se a API não estiver retornando este campo, a lógica abaixo falhará.
+        // Se estiver retornando, a lógica continuará.
+        const listaGeneros = livro.lista_generos_ids; 
 
+        if (listaGeneros && listaGeneros.length > 0) {
+            const generoId = listaGeneros[0];
+            
+            // Chamada à função fetchGenreName para obter o nome
+            const nomeEncontrado = await fetchGenreName(generoId); 
+            
+            if (nomeEncontrado && nomeEncontrado !== 'Gênero Não Encontrado' && nomeEncontrado !== 'Erro de Conexão (Gênero)') {
+                generoNome = nomeEncontrado;
+            }
+        }
+        
         const card = document.createElement('div');
         card.classList.add('book-card');
         card.innerHTML = `
@@ -255,7 +278,6 @@ async function renderBooksInCards(gridElement, livros) {
         gridElement.appendChild(card);
     });
 
-    // Aguarda a conclusão de todas as Promises antes de finalizar
     await Promise.all(renderPromises);
 }
 
