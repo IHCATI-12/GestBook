@@ -1,28 +1,52 @@
-// -------------------------------
-// CONFIGURAÇÃO DA API E ESTADO GLOBAL
-// -------------------------------
+// ====================================================================
+// ⚙️ CONFIGURAÇÃO DA API E ESTADO GLOBAL
+// Variáveis globais para armazenar configurações e estado da aplicação.
+// ====================================================================
+
+/**
+ * URL base da API (Root URL).
+ */
 const API_URL = "http://127.0.0.1:8000";
-let GENERO_ATIVO_ID = ""; // Armazena o ID do gênero atualmente selecionado
-let LEITOR_ID = null; // ID do leitor logado, necessário para carregar empréstimos
+
+/**
+ * Armazena o ID do gênero atualmente selecionado para filtrar o catálogo de livros.
+ * Inicialmente vazio para carregar todos os livros.
+ */
+let GENERO_ATIVO_ID = "";
+
+/**
+ * ID do leitor logado, obtido do LocalStorage na inicialização.
+ * Essencial para carregar empréstimos específicos do usuário.
+ */
+let LEITOR_ID = null;
+
+/**
+ * Cache local dos empréstimos do leitor, carregado da API uma única vez
+ * para permitir filtros locais rápidos (data e status) sem requisições repetidas.
+ */
 let leitorLoansCache = [];
 
-// ----------------------------------------------------------------
-// NOVAS FUNÇÕES DE FILTRO (BASEADAS NO DASHBOARD DO BIBLIOTECÁRIO)
-// ----------------------------------------------------------------
+// ====================================================================
+// 🔎 FUNÇÕES DE FILTRO DE EMPRÉSTIMOS
+// Lógica para filtrar a lista de empréstimos do leitor no lado do cliente.
+// ====================================================================
 
 /**
  * Aplica filtros locais (Status e Data) à lista de empréstimos em cache.
- * @param {Array} loans - Lista de empréstimos do leitor.
+ * A filtragem é feita a partir dos dados já carregados para o leitor.
+ *
+ * @param {Array<Object>} loans - Lista completa de empréstimos do leitor.
  * @param {Object} filters - Objeto contendo { startDate, endDate, status }.
- * @returns {Array} Lista de empréstimos filtrada.
+ * @returns {Array<Object>} Lista de empréstimos filtrada.
  */
 function applyLeitorLoanFilters(loans, filters) {
     let filtered = loans;
 
-    // Filtro de Data (Início e Fim)
+    // Converte e normaliza as datas de filtro
     const startDate = filters.startDate ? new Date(filters.startDate) : null;
     const endDate = filters.endDate ? new Date(filters.endDate) : null;
 
+    // Ajusta a hora para cobrir o dia inteiro para os filtros de data
     if (startDate) startDate.setHours(0, 0, 0, 0);
     if (endDate) endDate.setHours(23, 59, 59, 999);
 
@@ -32,7 +56,7 @@ function applyLeitorLoanFilters(loans, filters) {
     if (startDate || endDate) {
         filtered = filtered.filter(loan => {
             const loanDate = new Date(loan.data_emprestimo);
-            loanDate.setHours(0, 0, 0, 0);
+            loanDate.setHours(0, 0, 0, 0); // Normaliza a data do empréstimo para comparação
 
             const matchesStart = startDate ? loanDate >= startDate : true;
             const matchesEnd = endDate ? loanDate <= endDate : true;
@@ -44,21 +68,22 @@ function applyLeitorLoanFilters(loans, filters) {
     // 2. Filtro por Status
     if (statusFiltro && statusFiltro !== "") {
         filtered = filtered.filter(loan => {
-            // 🚨 NOVO: isOverdue vem diretamente da API
-            const isOverdue = loan.is_atrasado; 
+            // is_atrasado vem diretamente da API, indicando se a data de devolução prevista expirou.
+            const isOverdue = loan.is_atrasado;
             const apiStatus = (loan.status_emprestimo || '').toLowerCase();
             const isEmprestado = apiStatus === 'emprestado';
             const isDevolvido = apiStatus === 'devolvido';
 
             if (statusFiltro === "Atrasado") {
+                // Empréstimo está ativo E está atrasado
                 return isOverdue;
             } else if (statusFiltro === "Devolvido") {
                 return isDevolvido;
             } else if (statusFiltro === "Emprestado") {
-                // Emprestado (Ativos) = Emprestado E não Atrasado (Em dia)
-                return isEmprestado && !isOverdue; 
+                // Emprestado (Ativos e Em Dia) = Emprestado E não Atrasado
+                return isEmprestado && !isOverdue;
             }
-            // Se "Todos os Status" ou status desconhecido, retorna tudo
+            // Se "Todos os Status" ou status desconhecido, retorna verdadeiro
             return true;
         });
     }
@@ -66,12 +91,13 @@ function applyLeitorLoanFilters(loans, filters) {
     return filtered;
 }
 
-// ----------------------------------------------------------------
-// NOVAS FUNÇÕES DE BUSCA DE DETALHES DO LIVRO E AUTOR
-// ----------------------------------------------------------------
+// ====================================================================
+// 🔄 FUNÇÕES DE BUSCA DE DETALHES (LIVRO E AUTOR)
+// Requisições para enriquecer os dados dos empréstimos (título, autor).
+// ====================================================================
 
 /**
- * Busca o nome completo de um autor.
+ * Busca o nome completo de um autor pelo ID na API.
  * @param {number} autorId - ID do autor.
  * @returns {Promise<string>} Nome completo do autor ou uma string de erro.
  */
@@ -85,8 +111,8 @@ async function fetchAuthorName(autorId) {
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         });
 
-        // A sua rota retorna uma lista (response_model=list[AutorResponseSchema])
         const data = await response.json();
+        // A API pode retornar um único objeto ou um array. Pega o primeiro ou o objeto.
         const autorObj = Array.isArray(data) && data.length > 0 ? data[0] : data;
 
         if (response.ok && autorObj && autorObj.nome) {
@@ -102,7 +128,7 @@ async function fetchAuthorName(autorId) {
 }
 
 /**
- * Busca os detalhes de um livro pelo ID.
+ * Busca os detalhes de um livro (título e ID do autor) pelo ID.
  * @param {number} livroId - ID do livro.
  * @returns {Promise<Object>} Um objeto contendo { titulo, autor_id } ou um objeto de erro.
  */
@@ -132,22 +158,26 @@ async function fetchBookDetails(livroId) {
     }
 }
 
-// ----------------------------------------------------------------
-// FUNÇÕES DE EXIBIÇÃO DE CONTEÚDO E BUSCA (AJUSTADAS)
-// ----------------------------------------------------------------
+// ====================================================================
+// 📚 FUNÇÕES DE EXIBIÇÃO DE CONTEÚDO E BUSCA (Catálogo e Empréstimos)
+// Lógica para carregar e renderizar os dados nas seções da dashboard.
+// ====================================================================
 
-// A função fetchAuthorDetails (antiga) foi substituída por fetchAuthorName, mas
-// a função loadBooks ainda precisa dela para o catálogo. Mantenha a versão
-// antiga por compatibilidade com loadBooks, mas use a nova lógica na renderização.
+/**
+ * Alias de compatibilidade. Mantido para a função `loadBooks`
+ * que usa este nome para buscar o nome do autor.
+ */
 async function fetchAuthorDetails(autorId) {
+    // Reutiliza a função principal
     const nomeCompleto = await fetchAuthorName(autorId);
     return nomeCompleto;
 }
 
 
 /**
- * Função principal para buscar e exibir os livros no catálogo.
- * (Não houve alteração aqui, apenas uma correção no fetchAuthorDetails acima)
+ * Busca e exibe os livros no catálogo, aplicando filtros de busca e gênero.
+ * @param {string} [searchQuery=''] - Termo de busca para o título/ISBN.
+ * @param {string} [generoId=GENERO_ATIVO_ID] - ID do gênero para filtro.
  */
 async function loadBooks(searchQuery = '', generoId = GENERO_ATIVO_ID) {
     const bookGrid = document.getElementById('book-grid');
@@ -155,6 +185,7 @@ async function loadBooks(searchQuery = '', generoId = GENERO_ATIVO_ID) {
 
     bookGrid.innerHTML = '<p class="loading-message">Carregando livros...</p>';
 
+    // Constrói a URL da API com base nos filtros
     let url = `${API_URL}/livros?`;
     const token = localStorage.getItem('token');
 
@@ -164,6 +195,7 @@ async function loadBooks(searchQuery = '', generoId = GENERO_ATIVO_ID) {
     if (searchQuery) {
         url += `search=${encodeURIComponent(searchQuery)}&`;
     }
+    // Remove o '&' final se houver
     url = url.slice(-1) === '&' ? url.slice(0, -1) : url;
 
     try {
@@ -173,7 +205,7 @@ async function loadBooks(searchQuery = '', generoId = GENERO_ATIVO_ID) {
         });
 
         const livros = await response.json();
-        bookGrid.innerHTML = '';
+        bookGrid.innerHTML = ''; // Limpa a mensagem de carregamento
 
         if (!response.ok) {
             bookGrid.innerHTML = `<p class="error-message">Erro ao carregar catálogo: ${livros.detail || 'Falha na API'}</p>`;
@@ -185,6 +217,7 @@ async function loadBooks(searchQuery = '', generoId = GENERO_ATIVO_ID) {
             return;
         }
 
+        // Renderiza a lista de livros após obter os detalhes de seus autores
         await renderBooksInCards(bookGrid, livros);
 
     } catch (error) {
@@ -194,14 +227,16 @@ async function loadBooks(searchQuery = '', generoId = GENERO_ATIVO_ID) {
 }
 
 /**
- * Renderiza os livros como cards no grid (apenas consulta).
- * (Nenhuma alteração de lógica necessária aqui, pois fetchAuthorDetails foi ajustada)
+ * Renderiza os livros como cards no grid.
+ * @param {HTMLElement} gridElement - O elemento HTML onde os cards serão inseridos.
+ * @param {Array<Object>} livros - Lista de objetos de livros.
  */
 async function renderBooksInCards(gridElement, livros) {
+    // Cria um array de Promises para buscar os detalhes do autor para cada livro em paralelo
     const renderPromises = livros.map(async livro => {
         const nomeAutor = await fetchAuthorDetails(livro.autor_id);
 
-        // Simulação de gênero para exibição, pois o endpoint /livros não retorna o nome do gênero diretamente
+        // O endpoint /livros não retorna o nome do gênero. É mantido como desconhecido.
         const generoNome = "Gênero Desconhecido";
 
         const card = document.createElement('div');
@@ -220,12 +255,14 @@ async function renderBooksInCards(gridElement, livros) {
         gridElement.appendChild(card);
     });
 
+    // Aguarda a conclusão de todas as Promises antes de finalizar
     await Promise.all(renderPromises);
 }
 
 /**
- * Carrega todos os empréstimos do leitor (se não estiver em cache) e aplica filtros.
- * @param {Object} filters - Objeto contendo { startDate, endDate, status }.
+ * Carrega todos os empréstimos do leitor (se o cache estiver vazio) e aplica filtros.
+ * Se o cache estiver preenchido, apenas aplica os filtros localmente.
+ * @param {Object} [filters={}] - Objeto contendo { startDate, endDate, status }.
  */
 async function loadActiveLoans(filters = {}) {
     const loansList = document.getElementById('loans-list');
@@ -241,7 +278,7 @@ async function loadActiveLoans(filters = {}) {
     const url = `${API_URL}/emprestimos/leitor/${LEITOR_ID}`;
     const token = localStorage.getItem('token');
 
-    // Se o cache estiver vazio, recarrega TUDO da API
+    // Se o cache estiver vazio, recarrega TUDO da API para garantir dados atualizados
     if (leitorLoansCache.length === 0) {
         try {
             const response = await fetch(url, {
@@ -273,25 +310,28 @@ async function loadActiveLoans(filters = {}) {
         }
     }
 
-    // Aplica filtros ao cache e renderiza
+    // Aplica filtros ao cache e renderiza o resultado
     const filteredLoans = applyLeitorLoanFilters(leitorLoansCache, filters);
 
-    // Reutiliza a lógica de renderização
+    // Renderiza a lista de empréstimos filtrada
     await renderLeitorLoans(filteredLoans, loansList);
 }
 
 /**
- * Renderiza os empréstimos na tela do leitor (Adaptada de loadActiveLoans original).
- * É renomeada para evitar conflitos de escopo e manter a clareza.
+ * Renderiza os empréstimos do leitor (filtrados ou completos) na tela.
+ * Envolve buscar detalhes do livro e autor para cada empréstimo.
+ * @param {Array<Object>} emprestimos - Lista de empréstimos a serem exibidos.
+ * @param {HTMLElement} loansList - O elemento HTML onde os cards serão inseridos.
  */
 async function renderLeitorLoans(emprestimos, loansList) {
-    loansList.innerHTML = '';
+    loansList.innerHTML = ''; // Limpa a lista antes de renderizar
 
     if (emprestimos.length === 0) {
         loansList.innerHTML = '<p class="empty-message">Nenhum empréstimo que corresponda aos filtros.</p>';
         return;
     }
 
+    // Processa os empréstimos em paralelo
     const renderPromises = emprestimos.map(async emprestimo => {
         // 1. Buscar detalhes do Livro (Título e autor_id)
         const bookDetails = await fetchBookDetails(emprestimo.livro_id);
@@ -303,15 +343,16 @@ async function renderLeitorLoans(emprestimos, loansList) {
             autorNome = await fetchAuthorName(bookDetails.autor_id);
         }
 
-        // Formatação das datas
+        // Formatação das datas para exibição
         const dataEmprestimo = new Date(emprestimo.data_emprestimo).toLocaleDateString('pt-BR');
+        // Usa a data de devolução real se devolvido, ou a prevista se ainda emprestado
         const dataDevolucaoRef = emprestimo.data_devolucao_real || emprestimo.data_devolucao_prevista;
         const dataDisplay = new Date(dataDevolucaoRef).toLocaleDateString('pt-BR');
 
-        // --- Lógica de Status (baseada na API) ---
+        // --- Lógica de Status (Definição de texto e classes CSS) ---
         const apiStatus = (emprestimo.status_emprestimo || '').toLowerCase();
-        // 🚨 NOVO: isOverdue vem diretamente da API
-        const isOverdue = emprestimo.is_atrasado; 
+        // O status de atraso é recebido pronto da API
+        const isOverdue = emprestimo.is_atrasado;
 
         const isEmprestado = apiStatus === 'emprestado';
         const isDevolvido = apiStatus === 'devolvido';
@@ -321,19 +362,21 @@ async function renderLeitorLoans(emprestimos, loansList) {
         let dataLabel = isDevolvido ? 'Devolvido em' : 'Previsão de Devolução';
 
         if (isDevolvido) {
-            dueDateClass = 'returned'; 
+            dueDateClass = 'returned';
             statusText = '<p style="color: var(--secondary-text); font-weight: 600;">✅ DEVOLVIDO</p>';
         } else if (isEmprestado) {
-            // 🚨 USANDO isOverdue DIRETAMENTE
             if (isOverdue) {
+                // Emprestado e Atrasado
                 dueDateClass = 'overdue';
                 statusText = '<p class="overdue-message" style="color: var(--error-red); font-weight: 600;">⚠️ ATRASADO!</p>';
             } else {
-                dueDateClass = 'in-time'; 
+                // Emprestado e Em Dia
+                dueDateClass = 'in-time';
                 statusText = '<p style="color: var(--success-green); font-weight: 600;">✅ EM DIA</p>';
             }
         }
 
+        // Cria e insere o card de empréstimo
         const card = document.createElement('div');
         card.classList.add('loan-card');
 
@@ -347,17 +390,19 @@ async function renderLeitorLoans(emprestimos, loansList) {
         loansList.appendChild(card);
     });
 
+    // Aguarda a conclusão de todas as Promises de renderização
     await Promise.all(renderPromises);
 }
 
-// ----------------------------------------------------------------
-// FUNÇÕES DE GÊNEROS DINÂMICOS (SEM ALTERAÇÃO)
-// ----------------------------------------------------------------
+// ====================================================================
+// 🏷️ FUNÇÕES DE GÊNEROS DINÂMICOS
+// Lógica para carregar e gerenciar os filtros de gênero na sidebar.
+// ====================================================================
 
 /**
- * Cria um link para filtrar por gênero.
- * @param {string} nome - Nome do gênero.
- * @param {string} id - ID do gênero.
+ * Cria um link para filtrar por gênero e anexa o evento de clique.
+ * @param {string} nome - Nome do gênero a ser exibido.
+ * @param {string} id - ID do gênero (ou string vazia para 'Todos os Livros').
  * @param {HTMLElement} listElement - O elemento <ul> onde o link será adicionado.
  * @returns {HTMLElement} O elemento <li> com o link do gênero.
  */
@@ -371,13 +416,15 @@ function createGenreFilterLink(nome, id, listElement) {
     a.addEventListener('click', (e) => {
         e.preventDefault();
         const selectedGenreId = a.getAttribute('data-genre-id');
-        GENERO_ATIVO_ID = selectedGenreId;
+        GENERO_ATIVO_ID = selectedGenreId; // Atualiza o estado global
 
+        // Remove a classe 'active' de todos os links e adiciona ao link clicado
         listElement.querySelectorAll('a').forEach(link => link.classList.remove('active'));
         a.classList.add('active');
 
+        // Recarrega o catálogo com o novo filtro de gênero
         loadBooks('', selectedGenreId);
-        // Garante que a seção do catálogo esteja ativa ao filtrar
+        // Garante que a seção do catálogo esteja visível
         activateSection('catalogo-section');
     });
 
@@ -386,7 +433,7 @@ function createGenreFilterLink(nome, id, listElement) {
 }
 
 /**
- * Carrega e exibe a lista de gêneros na sidebar.
+ * Carrega a lista de gêneros da API e os exibe na sidebar como links de filtro.
  */
 async function loadGenres() {
     const list = document.querySelector('.genre-list');
@@ -405,23 +452,24 @@ async function loadGenres() {
 
         const generos = await response.json();
 
-        list.innerHTML = '';
+        list.innerHTML = ''; // Limpa a lista existente
 
-        // Adiciona a opção "Todos os Livros"
+        // Adiciona a opção padrão "Todos os Livros"
         const linkTodos = createGenreFilterLink('Todos os Livros', '', list);
         list.appendChild(linkTodos);
 
+        // Adiciona os gêneros retornados pela API
         generos.forEach(genero => {
             const link = createGenreFilterLink(genero.nome, genero.genero_id, list);
             list.appendChild(link);
         });
 
-        // Ativa o filtro "Todos os Livros" ao carregar e inicia o catálogo
+        // Configura o filtro "Todos os Livros" como ativo por padrão e carrega o catálogo inicial
         const todosLink = list.querySelector('a[data-genre-id=""]');
         if (todosLink) {
             todosLink.classList.add('active');
-            GENERO_ATIVO_ID = "";
-            loadBooks('', "");
+            GENERO_ATIVO_ID = ""; // Limpa o ID ativo
+            loadBooks('', ""); // Carrega todos os livros
         }
 
     } catch (error) {
@@ -430,23 +478,24 @@ async function loadGenres() {
     }
 }
 
-// ----------------------------------------------------------------
-// LÓGICA DE INTERAÇÃO DA UI (ATIVAÇÃO DE SEÇÕES, ETC.) (SEM ALTERAÇÃO)
-// ----------------------------------------------------------------
+// ====================================================================
+// 🖱️ LÓGICA DE INTERAÇÃO DA UI
+// Funções para gerenciar a interface, navegação e eventos de clique.
+// ====================================================================
 
 /**
- * Ativa uma seção de conteúdo específica e desativa as outras.
+ * Ativa uma seção de conteúdo específica e desativa as outras na dashboard.
+ * Também atualiza a barra lateral (sidebar) e carrega dados se necessário.
  * @param {string} sectionId - O ID da seção a ser ativada (ex: 'catalogo-section').
  */
 function activateSection(sectionId) {
-    // Desativa todas as seções
+    // 1. Gerenciamento de Seções de Conteúdo
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
     });
-    // Ativa a seção solicitada
     document.getElementById(sectionId).classList.add('active');
 
-    // Atualiza o estado "active" na sidebar
+    // 2. Gerenciamento de Links da Sidebar
     document.querySelectorAll('.main-menu .menu-item').forEach(item => {
         item.classList.remove('active');
         if (item.getAttribute('data-section') === sectionId) {
@@ -454,18 +503,19 @@ function activateSection(sectionId) {
         }
     });
 
-    // Se for a seção de empréstimos, carrega os dados
+    // 3. Carregamento de Dados Específicos (apenas para a seção de Empréstimos)
     if (sectionId === 'emprestimos-section' && LEITOR_ID) {
-        // Limpa o cache e força a busca de TODOS os empréstimos do leitor na API
+        // Limpa o cache para forçar a busca na API em caso de reentrada na seção
         leitorLoansCache = [];
-        // Chama com o filtro padrão (Emprestado)
+        // Chama com o filtro padrão (Emprestado, ou seja, ativos e em dia ou atrasados)
         loadActiveLoans({ status: 'Emprestado' });
     }
 }
 
-// ----------------------------------------------------------------
-// LÓGICA DE INICIALIZAÇÃO DA PÁGINA (DOMContentLoaded) (AJUSTADA)
-// ----------------------------------------------------------------
+// ====================================================================
+// 🚀 LÓGICA DE INICIALIZAÇÃO DA PÁGINA (DOMContentLoaded)
+// O código principal que configura a dashboard quando a página é carregada.
+// ====================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. CARREGAR DADOS DO USUÁRIO E ID
@@ -474,10 +524,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const userNameElement = document.getElementById('user-name');
     const userAvatarElement = document.getElementById('user-avatar-initial');
 
+    // Tenta converter o ID do leitor para número inteiro
     if (userIdString) {
         LEITOR_ID = parseInt(userIdString);
     }
 
+    // Exibe o nome e a inicial do usuário logado
     if (userName && userNameElement && userAvatarElement) {
         userNameElement.textContent = userName;
         userAvatarElement.textContent = userName.charAt(0).toUpperCase();
@@ -486,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
         userAvatarElement.textContent = 'V';
     }
 
-    // 2. CONFIGURAR NAVEGAÇÃO DA SIDEBAR
+    // 2. CONFIGURAR NAVEGAÇÃO DA SIDEBAR (Eventos de clique para trocar de seção)
     document.querySelectorAll('.main-menu .menu-item').forEach(item => {
         item.addEventListener('click', (e) => {
             const sectionId = item.getAttribute('data-section');
@@ -500,27 +552,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutButton = document.getElementById('logout-button');
     if (logoutButton) {
         logoutButton.addEventListener('click', () => {
+            // Remove as credenciais e dados do usuário do LocalStorage
             localStorage.removeItem('token');
             localStorage.removeItem('user_name');
             localStorage.removeItem('user_id');
-            // Redirecionar para a tela de login (ajuste o caminho se necessário)
+            // Redireciona para a tela de login
             window.location.href = '../skeleton/index.html';
         });
     }
 
-    // 4. Lógica da Barra de Pesquisa
+    // 4. Lógica da Barra de Pesquisa (Catálogo)
     const searchInput = document.getElementById('search-input');
     const searchButton = document.getElementById('search-button');
 
     if (searchButton && searchInput) {
         searchButton.addEventListener('click', () => {
             const query = searchInput.value.trim();
-            // Mantém o GÊNERO ATIVO, mas filtra pela query
+            // Carrega livros com a query, mantendo o filtro de gênero ativo
             loadBooks(query, GENERO_ATIVO_ID);
             // Garante que o catálogo esteja visível
             activateSection('catalogo-section');
         });
 
+        // Permite buscar ao pressionar Enter no campo de busca
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 searchButton.click();
@@ -528,27 +582,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 5. Lógica do Filtro de Empréstimos (ATUALIZADA)
+    // 5. Lógica do Filtro de Empréstimos (Aplicação dos filtros)
     const applyFilterButton = document.getElementById('apply-loan-filter');
     const filterStartDate = document.getElementById('filter-start-date');
     const filterEndDate = document.getElementById('filter-end-date');
-    const filterStatus = document.getElementById('filter-leitor-status'); // NOVO ELEMENTO!
+    const filterStatus = document.getElementById('filter-leitor-status');
 
     if (applyFilterButton) {
         applyFilterButton.addEventListener('click', () => {
+            // Reúne os valores dos campos de filtro
             const filters = {
                 startDate: filterStartDate.value,
                 endDate: filterEndDate.value,
                 status: filterStatus.value
             };
 
-            // Carrega do cache e aplica os filtros
+            // Recarrega do cache e aplica os filtros
             loadActiveLoans(filters);
         });
     }
 
     // 6. CARREGAR GÊNEROS E CATÁLOGO INICIAL (Inicia a aplicação)
     loadGenres();
-    // Inicia a aplicação na seção de Catálogo
+    // Ativa a seção de Catálogo como a tela inicial
     activateSection('catalogo-section');
 });

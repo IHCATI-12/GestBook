@@ -2,7 +2,6 @@ from app.models.livros_generos_models import LivrosGenerosModels
 from app.schemas.livros_generos_schemas import LivrosGenerosSchemas
 from sqlalchemy.orm import Session  
 
-
 # criar relação entre livro e gênero
 def create_livro_genero(db: Session, livro_generos: LivrosGenerosSchemas):
     novos_resgistros = []

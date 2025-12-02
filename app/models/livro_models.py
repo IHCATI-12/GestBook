@@ -13,14 +13,12 @@ class Livro(Base):
     numero_copias = Column(Integer, nullable=False, default=1)
     autor_id = Column(Integer, ForeignKey("autores.autor_id", ondelete="RESTRICT"), nullable=False)
 
-    generos = relationship(
-        "Genero",                   # Nome da classe do modelo Genero (você usou "Genero")
-        secondary="livros_generos", # Nome da sua tabela de junção (correto)
-        back_populates="livros"     # Nome da propriedade no modelo Genero
-    )
+    #-- Relationship com Genero --
+    generos = relationship("Genero", secondary="livros_generos", back_populates="livros")
 
     # ---- CHECK Constraints ----
     __table_args__ = (
+        # Garantir que o ano de publicação não seja no futuro
         CheckConstraint("ano_publicacao <= EXTRACT(YEAR FROM CURRENT_DATE)", name="check_ano_publicacao"),
         CheckConstraint("numero_copias >= 0", name="check_numero_copias"),
     )

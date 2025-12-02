@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from app.schemas.emprestimo_schemas import EmprestimoCreateSchema, EmprestimoUpdateSchema, EmprestimoResponseSchema, StatusEmprestimoEnum, DevolucaoSchema
+from app.schemas.emprestimo_schemas import EmprestimoCreateSchema, EmprestimoUpdateSchema, EmprestimoResponseSchema, DevolucaoSchema
 from app.repositories.emprestimo_repo import criar_emprestimo, atualizar_emprestimo, obter_emprestimos, deletar_emprestimo, devolver_emprestimo, obter_emprestimos_por_leitor
+from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.core.security import verifica_role
+from fastapi import APIRouter, Depends, HTTPException
 from typing import Any
 
 router = APIRouter(prefix="/emprestimos", tags=["Empréstimos"])
@@ -20,7 +20,7 @@ def atualizar_dados_emprestimo(emprestimo_id: int, emprestimo: EmprestimoUpdateS
 
 # Rota para obter todos os empréstimos
 @router.get("/", response_model=list[EmprestimoResponseSchema])
-def obter_todos_emprestimos(db: Session = Depends(get_db)):  
+def obter_todos_emprestimos(db: Session = Depends(get_db), usuario: Any = Depends(verifica_role(["bibliotecario"]))):  
     emprestimo = obter_emprestimos(db)
     if not emprestimo:
         raise HTTPException(status_code=404, detail="Empréstimo não encontrado")

@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session  
 from app.schemas.generos_schemas import GeneroCreate, GeneroResponse
 from app.schemas.livro_schemas import LivroResponseSimplificado
-from app.repositories.generos_repo import buscar_livros_por_genero, criar_genero, listar_generos,obter_genero_por_id, deletar_genero
+from app.repositories.generos_repo import criar_genero, listar_generos,obter_genero_por_id, deletar_genero, buscar_livros_por_genero
+from sqlalchemy.orm import Session  
 from app.db.session import get_db
 from app.core.security import verifica_role
+from fastapi import APIRouter, Depends, HTTPException
 from typing import Any
 
 router = APIRouter(prefix="/generos", tags=["Gêneros"])

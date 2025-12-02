@@ -1,15 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 from app.models.usuarios_models import Usuario
 from app.schemas.usuarios_schemas import UsuarioCreateSchema, UsuarioUpdateSchema, UsuarioResponseSchema
 from app.repositories.usarios_repo import atualizar_usuario, listar_usuario_leitores, obter_usuario_por_id,listar_usuarios_bibliotecarios, deletar_usuario
+from sqlalchemy.orm import Session
 from app.db.session import get_db
+from app.core.security import verifica_role
+from fastapi import APIRouter, Depends, HTTPException
 
 router = APIRouter(prefix="/usuarios", tags=["Usuários"])   
 
 # Rota para atualizar os dados de um usuário existente
 @router.put("/{usuario_id}", response_model=UsuarioResponseSchema)
-def atualizar_dados_usuario(usuario_id: int, usuario: UsuarioUpdateSchema, db: Session = Depends(get_db)):
+def atualizar_dados_usuario(usuario_id: int, usuario: UsuarioUpdateSchema, db: Session = Depends(get_db), usuario_logado: Usuario = Depends(verifica_role(["bibliotecario"]))):
     return atualizar_usuario(db, usuario_id, usuario)
 
 # Rota para obter um usuário pelo ID
@@ -32,6 +33,6 @@ def listar_leitores(db: Session = Depends(get_db)):
 
 # Rota para deletar um usuário pelo ID
 @router.delete("/{usuario_id}", status_code=204)
-def deletar_dados_usuario(usuario_id: int, db: Session = Depends(get_db)):
+def deletar_dados_usuario(usuario_id: int, db: Session = Depends(get_db), usuario_logado: Usuario = Depends(verifica_role(["bibliotecario"]))):
     deletar_usuario(db, usuario_id)
 

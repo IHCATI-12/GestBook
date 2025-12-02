@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import Optional
 
+# Função para cadastrar um novo autor
 def cadastrar_autor(db: Session, autor: AutorCreateSchema) -> Autor:
     novo_autor = Autor(
         nome=autor.nome,
@@ -17,9 +18,11 @@ def cadastrar_autor(db: Session, autor: AutorCreateSchema) -> Autor:
     db.refresh(novo_autor)
     return novo_autor
 
+# Função para listar todos os autores
 def listar_autores(db: Session, skip: int = 0, limit: int = 100) -> list[Autor]:
     return db.query(Autor).offset(skip).limit(limit).all()
 
+# Função para atualizar um autor existente
 def atualizar_autor(db: Session, autor_id: int, autor_atualizado: AutorUpdateSchema) -> Optional[Autor]:
     autor_db = db.query(Autor).filter(Autor.autor_id == autor_id).first()
     if not autor_db:
@@ -31,13 +34,16 @@ def atualizar_autor(db: Session, autor_id: int, autor_atualizado: AutorUpdateSch
         autor_db.nacionalidade = autor_atualizado.nacionalidade  # type: ignore
     if autor_atualizado.data_nascimento is not None:
         autor_db.data_nascimento = autor_atualizado.data_nascimento  # type: ignore
-
     db.commit()
     db.refresh(autor_db)
     return autor_db
 
+# Função para buscar um autor por ID
+def buscar_autor_por_id(db: Session, autor_id: int) -> Optional[Autor]:
+    return db.query(Autor).filter(Autor.autor_id == autor_id).first()
+
+# Função para deletar um autor
 def deletar_autor(db: Session, autor_id: int) -> None:
-    # mover para services futuramente
     autor_db = db.query(Autor).filter(Autor.autor_id == autor_id).first()
     if not autor_db:
         raise HTTPException(status_code=404, detail="Autor não encontrado")
@@ -48,6 +54,4 @@ def deletar_autor(db: Session, autor_id: int) -> None:
     db.commit()
 
 
-def buscar_autor_por_id(db: Session, autor_id: int) -> Optional[Autor]:
-    return db.query(Autor).filter(Autor.autor_id == autor_id).first()
 

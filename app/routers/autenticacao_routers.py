@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from app.models.usuarios_models import Usuario
+from app.schemas.autenticacao_schemas import RegisterSchema, ResponseRegisterSchema, LoginSchema, LoginResponseFrontendSchema
+from app.repositories.autenticacao_repo import registra_usuario
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.core.security import senha_hash, verifica_senha
 from app.core.jwt import cria_token_acesso as criar_token_acesso
-from app.repositories.autenticacao_repo import registra_usuario
-from app.schemas.autenticacao_schemas import RegisterSchema, ResponseRegisterSchema, LoginSchema, LoginResponseFrontendSchema
-from app.models.usuarios_models import Usuario
+from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 

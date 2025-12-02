@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, ForeignKey
 from app.db.base import Base
 
+# Definição do modelo de tabela de junção LivrosGeneros
 class LivrosGenerosModels(Base):
     __tablename__ = 'livros_generos'
 

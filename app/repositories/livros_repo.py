@@ -2,18 +2,17 @@ from sqlalchemy import or_
 from app.models.livro_models import Livro
 from app.models.autores_models import Autor
 from app.models.livros_generos_models import LivrosGenerosModels
+from app.models.emprestimo_models import Emprestimo, status_emprestimoEnum
 from app.schemas.livro_schemas import LivroCreateSchema, LivroUpdateSchema
+from app.schemas.livros_generos_schemas import LivrosGenerosSchemas 
+from app.repositories.livros_generos_repo import create_livro_genero
+from app.repositories.emprestimo_repo import deletar_emprestimo
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import Optional
-from app.repositories.livros_generos_repo import create_livro_genero
-from app.schemas.livros_generos_schemas import LivrosGenerosSchemas 
-from app.models.emprestimo_models import Emprestimo, status_emprestimoEnum
-from app.repositories.emprestimo_repo import deletar_emprestimo
 
-
+# Função para cadastrar um novo livro criando também os relacionamentos com gêneros
 def cadastrar_livro(db: Session, livro: LivroCreateSchema) -> Livro:
-    # mover para services futuramente
     autor_cadastrado = db.query(Autor).filter(Autor.autor_id == livro.autor_id).first()
     if not autor_cadastrado:
         raise HTTPException(status_code=400, detail="Autor não cadastrado")
@@ -32,7 +31,8 @@ def cadastrar_livro(db: Session, livro: LivroCreateSchema) -> Livro:
     create_livro_genero(db, LivrosGenerosSchemas(livro_id=novo_livro.livro_id, generos_ids=lista_generos_ids))  # type: ignore
     return novo_livro
 
-def listar_livros(db: Session, genero: Optional[int] = None, search: Optional[str] = None, skip: int = 0, limit: int = 100) -> list[Livro]:
+# Função para listar livros com filtros opcionais de gênero e busca por título ou autor
+def listar_livros(db: Session, genero: Optional[int] = None, search: Optional[str] = None, skip: int = 0, limit: int = 50) -> list[Livro]:
     query = db.query(Livro)
     if genero is not None:
         query = query.join(LivrosGenerosModels).filter(
@@ -45,8 +45,8 @@ def listar_livros(db: Session, genero: Optional[int] = None, search: Optional[st
             or_(Livro.titulo.ilike(search_pattern),Autor.nome.ilike(search_pattern), Autor.sobrenome.ilike(search_pattern)))
     return query.offset(skip).limit(limit).all()
 
+# Função para atualizar um livro 
 def atualizar_livro(db: Session, livro_id: int, livro_atualizado: LivroUpdateSchema) -> Optional[Livro]:
-    # mover para services futuramente
     livro_db = db.query(Livro).filter(Livro.livro_id == livro_id).first()
     if not livro_db:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
@@ -68,6 +68,7 @@ def atualizar_livro(db: Session, livro_id: int, livro_atualizado: LivroUpdateSch
     db.refresh(livro_db)
     return livro_db
 
+# Função para deletar um livro 
 def deletar_livro(db: Session, livro_id: int) -> None:
     livro_db = db.query(Livro).filter(Livro.livro_id == livro_id).first()
     if not livro_db:
@@ -75,12 +76,12 @@ def deletar_livro(db: Session, livro_id: int) -> None:
     db.delete(livro_db)
     db.commit()
 
-# Funcao que deleta o livro e todos os emprestimos relacionados a ele se eles estiverem devolvidos
+# Funcao que deleta o livro e todos os emprestimos relacionados a ele se eles estiverem devolvidos substituindo a funcao de deletar livro
 def deletar_livro_e_emprestimos(db: Session, livro_id: int) -> None:
     livro_db = db.query(Livro).filter(Livro.livro_id == livro_id).first()
     if not livro_db:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
-    
+
     emprestimos_livro = db.query(Emprestimo).filter(Emprestimo.livro_id == livro_id).all()
     for emprestimo in emprestimos_livro:
         if emprestimo.status_emprestimo != status_emprestimoEnum.DEVOLVIDO.value: # type: ignore
@@ -89,11 +90,6 @@ def deletar_livro_e_emprestimos(db: Session, livro_id: int) -> None:
         deletar_emprestimo(db, emprestimo.emprestimo_id) # type: ignore
     db.delete(livro_db)
     db.commit()
-
-# Retorna livros com etoque disponível
-def listar_livros_com_estoque(db: Session) -> list[Livro]:
-    livros_com_estoque = db.query(Livro).filter(Livro.numero_copias > 0).all()
-    return livros_com_estoque
 
 # verifica e atualiza o estoque do livro ao criar um empréstimo
 def atualizar_estoque_livro(db: Session, livro_id: int) -> Livro:
@@ -109,17 +105,24 @@ def atualizar_estoque_livro(db: Session, livro_id: int) -> Livro:
     db.refresh(livro_db)
     return livro_db
 
-# Verifica o estoque disponível de um livro
-def verificar_estoque_livro(db: Session, livro_id: int) -> bool:
-    livro_db = db.query(Livro).filter(Livro.livro_id == livro_id).first()
-    if not livro_db:
-        raise HTTPException(status_code=404, detail="Livro não encontrado")
-    copias_disponiveis: int = livro_db.numero_copias # type: ignore
-    return copias_disponiveis > 0
-
 # Busca livro pelo id
 def obter_livro_por_id(db: Session, livro_id: int) -> Livro:    
     livro_db = db.query(Livro).filter(Livro.livro_id == livro_id).first()
     if not livro_db:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
     return livro_db
+
+#===================== Funções de estoque +====================#
+
+# Retorna livros com estoque disponível
+def listar_livros_com_estoque(db: Session) -> list[Livro]:
+    livros_com_estoque = db.query(Livro).filter(Livro.numero_copias > 0).all()
+    return livros_com_estoque
+
+# Verifica o estoque disponível de um livro ultilizado na função de atualizar_estoque_livro
+def verificar_estoque_livro(db: Session, livro_id: int) -> bool:
+    livro_db = db.query(Livro).filter(Livro.livro_id == livro_id).first()
+    if not livro_db:
+        raise HTTPException(status_code=404, detail="Livro não encontrado")
+    copias_disponiveis: int = livro_db.numero_copias # type: ignore
+    return copias_disponiveis > 0

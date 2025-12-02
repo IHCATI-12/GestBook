@@ -7,8 +7,8 @@ from datetime import date
 class status_emprestimoEnum(str, Enum):
     EMPRESTADO = "Emprestado" 
     DEVOLVIDO = "Devolvido"
-    # ATRASADO = "Atrasado"
 
+# Definição do modelo Emprestimo
 class Emprestimo(Base):
     __tablename__ = "emprestimo"
 
@@ -21,17 +21,22 @@ class Emprestimo(Base):
     data_devolucao_real = Column(DateTime, nullable=True)
     status_emprestimo = Column(String(15), nullable=False, default=status_emprestimoEnum.EMPRESTADO.value)
     
+    # Propriedade para verificar se o empréstimo está atrasado
     @property
     def is_atrasado(self) -> bool:
         hoje = date.today()
+        # Verifica se a data de devolução prevista existe
         if not self.data_devolucao_prevista: # type: ignore
             return False
+        # Obtém apenas a parte da data (sem hora)
         data_prevista = self.data_devolucao_prevista.date()
+        # Verifica se o empréstimo está ativo
         is_ativo = self.status_emprestimo.lower() == status_emprestimoEnum.EMPRESTADO.value.lower()
         return is_ativo and (data_prevista < hoje)
         
     # ---- CHECK Constraints ----
     __table_args__ = (
+        # Garantir que o status do empréstimo seja um dos valores permitidos
         CheckConstraint("status_emprestimo IN ('Emprestado', 'Devolvido', 'Atrasado')", name="check_status_emprestimo"),
         CheckConstraint( "data_devolucao_prevista > data_emprestimo", name="chk_devolucao_datas"))
     

@@ -7,6 +7,7 @@ class roleEnum(str, Enum):
     LEITOR = "leitor"
     BIBLIOTECARIO = "bibliotecario"
 
+# Definição do modelo Usuario
 class Usuario(Base):
     __tablename__ = "usuarios"
 
@@ -14,6 +15,6 @@ class Usuario(Base):
     nome = Column(String(255), index=True, nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
     senha_hash = Column(String(255), nullable=False)
-    role = Column(String(20), nullable=False, default=roleEnum.LEITOR.value)  # Usando o Enum para definir valores possíveis
+    role = Column(String(20), nullable=False, default=roleEnum.LEITOR.value)
     data_cadastro = Column(DateTime(timezone=False), server_default=text("CURRENT_TIMESTAMP"))
 

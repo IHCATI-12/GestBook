@@ -3,19 +3,21 @@ from typing import Optional
 from datetime import date, datetime
 from enum import Enum
 
+# Enum para status do empréstimo
 class StatusEmprestimoEnum(str, Enum):
     EMPRESTADO = "Emprestado"
     DEVOLVIDO = "Devolvido"
-    # ATRASADO = "Atrasado"
 
+# Schema base para Empréstimo
 class EmprestimoBaseSchema(BaseModel):
     livro_id: int
     leitor_id: int
     bibliotecario_id: int
     data_devolucao_prevista: datetime
 
-
+# Schema para criação de Empréstimo
 class EmprestimoCreateSchema(EmprestimoBaseSchema):
+    # Validador para garantir que a data de devolução prevista seja futura
     @field_validator('data_devolucao_prevista', mode='before')
     @classmethod
     def check_future_date(cls, v):
@@ -30,6 +32,7 @@ class EmprestimoCreateSchema(EmprestimoBaseSchema):
         
         return v
 
+# Schema para atualização de Empréstimo
 class EmprestimoUpdateSchema(BaseModel):
     livro_id: Optional[int] = None
     leitor_id: Optional[int] = None
@@ -38,10 +41,12 @@ class EmprestimoUpdateSchema(BaseModel):
     data_devolucao_real: Optional[datetime] = None
     status_emprestimo: Optional[StatusEmprestimoEnum] = None
 
+# Schema para devolução de Empréstimo
 class DevolucaoSchema(BaseModel):
     bibliotecario_devolucao_id: int
     data_devolucao_real: datetime
 
+# Schema de resposta para Empréstimo
 class EmprestimoResponseSchema(EmprestimoBaseSchema):
     emprestimo_id: int
     livro_id: int
@@ -56,5 +61,4 @@ class EmprestimoResponseSchema(EmprestimoBaseSchema):
     class Config:
         from_attributes = True
         use_enum_values = True
-
-        
+  

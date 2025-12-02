@@ -8,16 +8,21 @@ from app.db.session import get_db
 from typing import cast
 import os
 
+# Segurança de autenticação e autorização
 seguranca = HTTPBearer()
 
+# Configuração do contexto de criptografia de senhas
 contexto_senha = CryptContext(schemes=["argon2"], deprecated="auto")
 
+# Funções de hash e verificação de senhas
 def senha_hash(password: str) -> str:
     return contexto_senha.hash(password)
 
+# Verifica se a senha fornecida corresponde à senha criptografada
 def verifica_senha(senha: str, senha_criptografada: str) -> bool:
     return contexto_senha.verify(senha, senha_criptografada)   
  
+# Verifica se o usuário possui um dos papéis permitidos
 def verifica_role(roles_permitidas: list[str]):
     def role_checker(usuario: Usuario = Depends(obter_usuario_atual)) -> Usuario:
         if usuario.role not in roles_permitidas:
@@ -25,6 +30,7 @@ def verifica_role(roles_permitidas: list[str]):
         return usuario
     return role_checker
 
+# Obtém o usuário atual a partir do token JWT
 def obter_usuario_atual(db: Session = Depends(get_db), credentials: HTTPAuthorizationCredentials = Depends(seguranca)) -> Usuario:
     token = credentials.credentials
     try:
@@ -34,11 +40,9 @@ def obter_usuario_atual(db: Session = Depends(get_db), credentials: HTTPAuthoriz
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")    
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")
-    
     usuario = db.query(Usuario).filter(Usuario.usuario_id == int(usuario_id)).first()
     if usuario is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuário não encontrado")
-    
     return usuario
 
 

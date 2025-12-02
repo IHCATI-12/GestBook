@@ -1,10 +1,12 @@
 from pydantic import BaseModel, Field, field_validator
-from datetime import date
 from typing import Optional
+from datetime import date
 
+# Schema base para Autor
 class AutorBaseSchema(BaseModel):
     nome: str = Field(..., max_length=255)
     data_nascimento: Optional[date] = None
+    # Validador para garantir que a data de nascimento não seja futura
     @field_validator('data_nascimento')
     @classmethod
     def check_data_nao_futura(cls, valor_data: date) -> date:
@@ -15,16 +17,19 @@ class AutorBaseSchema(BaseModel):
             )
         return valor_data
 
+# Schema para criação de Autor
 class AutorCreateSchema(AutorBaseSchema):
     sobrenome: Optional[str] = Field(max_length=100)
     nacionalidade: Optional[str] = Field(max_length=100)
 
+# Schema para atualização de Autor
 class AutorUpdateSchema(BaseModel):
     nome: Optional[str] = Field(None,max_length=255)
     data_nascimento: Optional[date] = None
     sobrenome: Optional[str] = Field(None, max_length=255)
     nacionalidade: Optional[str] = Field(None, max_length=100)
 
+# Schema de resposta para Autor
 class AutorResponseSchema(AutorBaseSchema):
     autor_id: int
     sobrenome: str = Field(max_length=255)
