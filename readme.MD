@@ -67,3 +67,8 @@ O módulo administrativo implementa a lógica de negócio central do sistema:
 Para dúvidas, entre em contato:
 
 Ulisses S. Filho - 007259@libertas.edu.br
+
+## Video de Apresentação do projeto:
+
+https://youtu.be/TqDqN__DVBk
+
